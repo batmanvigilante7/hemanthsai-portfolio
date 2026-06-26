@@ -56,9 +56,9 @@ const identitySignals = [
 ];
 
 const joinedX = [-412.5, -137.5, 137.5, 412.5];
-const tableX = [-360, -120, 120, 360];
-const tableY = [-18, -86, -86, -18];
-const tableRotateZ = [-7.5, -2, 2, 7.5];
+const tableX = [-390, -130, 130, 390];
+const tableY = [0, -20, -20, 0];
+const tableRotateZ = [-5.5, -1.5, 1.5, 5.5];
 
 function ImageFrame({ src, alt, title, objectPosition }) {
   return (
@@ -69,7 +69,7 @@ function ImageFrame({ src, alt, title, objectPosition }) {
         style={{ objectPosition }}
         className="h-full w-full object-cover brightness-100 contrast-105 saturate-[0.92]"
       />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-black/10" />
       <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_70px_rgba(0,0,0,0.48)]" />
       <span className="absolute bottom-3 left-3 rounded-full border border-white/10 bg-black/35 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/65 backdrop-blur-md">
         {title}
@@ -129,27 +129,27 @@ function SignalModal({ signal, onClose }) {
 function SplitFlipCard({ signal, index, progress, onOpen }) {
   const x = useTransform(
     progress,
-    [0, 0.28, 0.36, 0.5, 0.78, 0.86, 0.96, 1],
+    [0, 0.18, 0.32, 0.46, 0.7, 0.82, 0.94, 1],
     [joinedX[index], joinedX[index], joinedX[index], tableX[index], tableX[index], tableX[index], joinedX[index], joinedX[index]]
   );
   const y = useTransform(
     progress,
-    [0, 0.28, 0.36, 0.5, 0.78, 0.86, 0.96, 1],
-    [0, 0, 0, tableY[index] + 72, tableY[index] + 72, tableY[index] + 72, 0, 0]
+    [0, 0.18, 0.32, 0.46, 0.7, 0.82, 0.94, 1],
+    [0, 0, 0, tableY[index], tableY[index], tableY[index], 0, 0]
   );
   const rotateZ = useTransform(
     progress,
-    [0, 0.28, 0.36, 0.5, 0.78, 0.86, 0.96, 1],
+    [0, 0.18, 0.32, 0.46, 0.7, 0.82, 0.94, 1],
     [0, 0, 0, tableRotateZ[index], tableRotateZ[index], tableRotateZ[index], 0, 0]
   );
-  const rotateY = useTransform(progress, [0, 0.5, 0.58, 0.78, 0.86, 1], [0, 0, 180, 180, 360, 360]);
-  const scale = useTransform(progress, [0, 0.5, 0.78, 1], [1, 0.94, 0.94, 1]);
-  const pointerEvents = useTransform(progress, (value) => (value > 0.58 && value < 0.78 ? "auto" : "none"));
+  const rotateY = useTransform(progress, [0, 0.42, 0.54, 0.72, 0.84, 1], [0, 0, 180, 180, 360, 360]);
+  const scale = useTransform(progress, [0, 0.46, 0.72, 1], [1, 0.82, 0.82, 1]);
+  const pointerEvents = useTransform(progress, (value) => (value > 0.54 && value < 0.72 ? "auto" : "none"));
   const joinedRadius = index === 0 ? "32px 0 0 32px" : index === 3 ? "0 32px 32px 0" : "0";
-  const radius = useTransform(progress, [0, 0.36, 0.5, 0.86, 0.96, 1], [joinedRadius, joinedRadius, "32px", "32px", joinedRadius, joinedRadius]);
-  const seamOpacity = useTransform(progress, [0, 0.28, 0.36, 0.86, 0.96, 1], [0, 0, 0.45, 0.45, 0, 0]);
-  const border = useTransform(progress, [0, 0.36, 0.5, 0.86, 0.96, 1], ["1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,.14)", "1px solid rgba(255,255,255,.14)", "1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0)"]);
-  const shadow = useTransform(progress, [0, 0.36, 0.5, 0.86, 0.96, 1], ["0 0 0 rgba(0,0,0,0)", "0 0 0 rgba(0,0,0,0)", "0 38px 130px rgba(0,0,0,.62)", "0 38px 130px rgba(0,0,0,.62)", "0 0 0 rgba(0,0,0,0)", "0 0 0 rgba(0,0,0,0)"]);
+  const radius = useTransform(progress, [0, 0.32, 0.46, 0.82, 0.94, 1], [joinedRadius, joinedRadius, "28px", "28px", joinedRadius, joinedRadius]);
+  const seamOpacity = useTransform(progress, [0, 0.18, 0.34, 0.82, 0.94, 1], [0, 0, 0.35, 0.35, 0, 0]);
+  const border = useTransform(progress, [0, 0.32, 0.46, 0.82, 0.94, 1], ["1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,.14)", "1px solid rgba(255,255,255,.14)", "1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0)"]);
+  const shadow = useTransform(progress, [0, 0.32, 0.46, 0.82, 0.94, 1], ["0 0 0 rgba(0,0,0,0)", "0 0 0 rgba(0,0,0,0)", "0 32px 110px rgba(0,0,0,.62)", "0 32px 110px rgba(0,0,0,.62)", "0 0 0 rgba(0,0,0,0)", "0 0 0 rgba(0,0,0,0)"]);
 
   const posterWidth = 1100;
   const posterHeight = 620;
@@ -213,25 +213,21 @@ function SplitFlipCard({ signal, index, progress, onOpen }) {
 
 function DesktopIdentityArtifact({ onOpen }) {
   const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 20%", "end end"] });
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  const artifactScale = useTransform(scrollYProgress, [0, 0.46, 0.72, 1], [0.86, 0.82, 0.82, 0.86]);
 
   return (
-    <div ref={ref} className="relative hidden min-h-[300vh] md:block">
+    <div ref={ref} className="relative hidden h-[190vh] md:block">
       <div className="sticky top-0 grid h-screen place-items-center overflow-visible">
-        <div className="pointer-events-none absolute left-8 top-12 z-10 max-w-xl">
-          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#facc15]">Identity artifact</p>
-          <h2 className="mt-4 font-syne text-[clamp(2.6rem,5.4vw,5.4rem)] font-black uppercase leading-[0.84] tracking-[-0.08em] text-white">One identity.<br />Four forces.</h2>
-        </div>
-        <div
-          className="relative h-[min(64vh,620px)] w-[min(92vw,1100px)]"
-          style={{ perspective: 1400, transformStyle: "preserve-3d" }}
+        <motion.div
+          className="relative h-[620px] w-[1100px] origin-center"
+          style={{ scale: artifactScale, perspective: 1400, transformStyle: "preserve-3d" }}
         >
-          <div className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-white/[0.045] blur-[90px]" />
+          <div className="pointer-events-none absolute inset-0 -z-10 rounded-[42px] bg-white/[0.045] blur-[90px]" />
           {identitySignals.map((signal, index) => (
             <SplitFlipCard key={signal.title} signal={signal} index={index} progress={scrollYProgress} onOpen={() => onOpen(index)} />
           ))}
-        </div>
-        <p className="pointer-events-none absolute bottom-9 font-mono text-[9px] uppercase tracking-[0.45em] text-white/35">Scroll to decompose / Scroll to recombine</p>
+        </motion.div>
       </div>
     </div>
   );
@@ -239,12 +235,9 @@ function DesktopIdentityArtifact({ onOpen }) {
 
 function MobileIdentityFallback({ onOpen }) {
   return (
-    <div className="px-5 py-16 md:hidden">
+    <div className="px-5 py-14 md:hidden">
       <div className="mx-auto max-w-md">
-        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#facc15]">Identity artifact</p>
-        <h2 className="mt-4 font-syne text-[clamp(2.8rem,15vw,4.5rem)] font-black uppercase leading-[0.84] tracking-[-0.09em]">One identity.<br />Four forces.</h2>
-        <p className="mt-5 text-base leading-relaxed text-white/65">Desktop unlocks the split-and-recompose interaction. Here are the four forces behind the work.</p>
-        <div className="mt-8 overflow-hidden rounded-[2rem] border border-white/14 bg-[#070707] shadow-[0_36px_120px_rgba(0,0,0,.58)]">
+        <div className="overflow-hidden rounded-[2rem] border border-white/14 bg-[#070707] shadow-[0_36px_120px_rgba(0,0,0,.58)]">
           <img src={posterAsset} alt="Hemanth Sai identity poster" className="w-full" />
         </div>
         <div className="mt-6 grid gap-4">
@@ -269,7 +262,7 @@ export default function IdentityStack() {
 
   return (
     <section id="identity" className="relative overflow-x-clip bg-[#070707] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(255,255,255,.075),transparent_32%),radial-gradient(circle_at_86%_8%,rgba(141,162,255,.10),transparent_30%),linear-gradient(180deg,#070707,#050505)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,rgba(255,255,255,.07),transparent_34%),linear-gradient(180deg,#070707,#050505)]" />
       <DesktopIdentityArtifact onOpen={setActiveSignal} />
       <MobileIdentityFallback onOpen={setActiveSignal} />
       <AnimatePresence>{activeSignal !== null && <SignalModal signal={identitySignals[activeSignal]} onClose={() => setActiveSignal(null)} />}</AnimatePresence>
