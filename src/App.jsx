@@ -11,6 +11,7 @@ import Portfolio from "./components/Portfolio";
 import Hero from "./components/Hero";
 import Welcome from "./components/Welcome";
 import IdentityStack from "./components/IdentityStack";
+import OperatingMethod from "./components/OperatingMethod";
 import Projects from "./components/Projects";
 import Services from "./components/Services";
 import Contact from "./components/Contact";
@@ -78,6 +79,7 @@ export default function App() {
           <Hero />
           <Welcome />
           <IdentityStack />
+          <OperatingMethod />
           <Projects />
           <Services />
           <Contact />
