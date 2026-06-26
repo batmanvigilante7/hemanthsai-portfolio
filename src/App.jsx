@@ -10,6 +10,7 @@ import Navbar from "./components/Navbar";
 import Portfolio from "./components/Portfolio";
 import Hero from "./components/Hero";
 import Welcome from "./components/Welcome";
+import IdentityStack from "./components/IdentityStack";
 import Projects from "./components/Projects";
 import Services from "./components/Services";
 import Contact from "./components/Contact";
@@ -76,6 +77,7 @@ export default function App() {
         <div className="bg-zinc-950 w-full pointer-events-auto">
           <Hero />
           <Welcome />
+          <IdentityStack />
           <Projects />
           <Services />
           <Contact />
