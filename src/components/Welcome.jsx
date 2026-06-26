@@ -24,11 +24,10 @@ export default function Welcome() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // GSAP + ScrollTrigger Timeline Setup
+  // GSAP + ScrollTrigger Setup
   useEffect(() => {
     const ctx = gsap.context(() => {
       // 1. Hero Image scroll morph / transition continuation
-      // Scales up and top aligns, fading into a soft background watermark in the welcome scene
       gsap.fromTo(
         transitionImageContainerRef.current,
         {
@@ -43,8 +42,8 @@ export default function Welcome() {
           ease: "none",
           scrollTrigger: {
             trigger: welcomeSectionRef.current,
-            start: "top bottom", // triggers as soon as Welcome enters the viewport
-            end: "top top", // ends when Welcome is active full screen
+            start: "top bottom",
+            end: "top top",
             scrub: true,
           }
         }
@@ -122,7 +121,7 @@ export default function Welcome() {
     <section
       ref={welcomeSectionRef}
       id="welcome"
-      className="relative min-h-[200vh] w-full bg-gradient-to-b from-white via-zinc-50 to-white text-black flex flex-col justify-start overflow-hidden py-32 selection:bg-black selection:text-[#facc15]"
+      className="relative min-h-[200vh] w-full bg-gradient-to-b from-white via-zinc-100 to-zinc-950 text-black flex flex-col justify-start overflow-hidden pt-32 pb-0 selection:bg-black selection:text-[#facc15]"
     >
       {/* Hero Image Morph Transition (Watermark backdrop behind typography) */}
       <div
@@ -169,27 +168,26 @@ export default function Welcome() {
         </div>
       </div>
 
-      {/* Screen 2: Testimonials 3D Stack (Fullscreen 100vh area) */}
-      <div className="min-h-screen w-full flex flex-col justify-center relative pt-24 pb-12 overflow-hidden z-10">
+      {/* Screen 2: Testimonials (Fullscreen 100vh area) */}
+      <div className="min-h-screen w-full bg-zinc-950 text-white flex flex-col justify-center relative py-24 md:py-32 overflow-hidden z-10">
         
         {/* Title and Subtitle */}
         <div
           ref={testimonialHeaderRef}
           className="text-center px-6 mb-16 relative z-10"
         >
-          <p className="font-outfit text-xs sm:text-sm font-bold tracking-[0.25em] uppercase text-zinc-400 mb-3">
+          <p className="font-outfit text-xs sm:text-sm font-bold tracking-[0.25em] uppercase text-[#facc15] mb-3">
             What people are saying
           </p>
-          <h3 className="font-syne font-black text-4xl sm:text-6xl tracking-tight text-black uppercase select-none">
+          <h3 className="font-syne font-black text-4xl sm:text-6xl tracking-tight text-white uppercase select-none">
             Client Love
           </h3>
         </div>
 
-        {/* 3D Letter Testimonials Stack Component */}
+        {/* Testimonials 3D Paper Letter Flip Section */}
         <div className="relative z-10 w-full mt-4 flex items-center justify-center pointer-events-auto">
           <LetterTestimonials />
         </div>
-        
       </div>
     </section>
   );
