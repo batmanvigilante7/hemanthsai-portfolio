@@ -1,104 +1,212 @@
 import React, { useEffect, useRef } from "react";
-import { ArrowDownRight, MapPin, Sparkles } from "lucide-react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-const INTRO_IMAGE = "https://batmanvigilante7.github.io/hemanthsai/assets/hero-current.webp.webp";
+gsap.registerPlugin(ScrollTrigger);
+
+const GENESIS_VIDEO = `${import.meta.env.BASE_URL}assets/videos/genesis.mp4`;
 
 export default function Hero() {
-  const sectionRef = useRef(null);
-  const mediaRef = useRef(null);
-  const copyRef = useRef(null);
+  const heroRef = useRef(null);
+  const frameRef = useRef(null);
+  const videoRef = useRef(null);
+  const overlayRef = useRef(null);
+  const nameRef = useRef(null);
+  const subRef = useRef(null);
 
   useEffect(() => {
-    const updateScene = () => {
-      const section = sectionRef.current;
-      const media = mediaRef.current;
-      const copy = copyRef.current;
-      if (!section || !media || !copy) return;
+    // Attempt to play the background video
+    if (videoRef.current) {
+      videoRef.current.play().catch((err) => {
+        console.log("Autoplay was prevented, trying again on interaction:", err);
+      });
+    }
 
-      const rect = section.getBoundingClientRect();
-      const scrollRange = Math.max(section.offsetHeight - window.innerHeight, 1);
-      const progress = Math.max(0, Math.min(1, -rect.top / scrollRange));
-      const expand = Math.min(progress / 0.72, 1);
-      const fade = Math.max(0, (progress - 0.78) / 0.22);
-      const scale = 0.75 + expand * 0.25;
+    // Set initial opacity of the next section to 0 so it can cross-fade beautifully
+    gsap.set("#welcome", { opacity: 0 });
 
-      media.style.transform = `scale(${scale}) translateY(${-fade * 14}px)`;
-      media.style.opacity = `${1 - fade}`;
-      copy.style.opacity = `${Math.max(0, 1 - progress * 1.25)}`;
-      copy.style.transform = `translateY(${-progress * 34}px)`;
-    };
+    // Initialize ScrollTrigger timeline
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: heroRef.current,
+        start: "top top",
+        end: "+=200%", // Pin for two full viewports of scroll distance
+        pin: true,
+        scrub: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+      }
+    });
 
-    updateScene();
-    window.addEventListener("scroll", updateScene, { passive: true });
-    window.addEventListener("resize", updateScene);
+    // Stage 1: Scale 0.8 -> 1.0 (corresponds to frame scale 1.0 -> 1.25), blur 3px -> 0px, and fade supporting subtitle (0.0 to 0.5)
+    tl.to(frameRef.current, {
+      scale: 1.25,
+      borderRadius: "0px",
+      borderWidth: "0px",
+      padding: "0px",
+      boxShadow: "none",
+      filter: "blur(0px)",
+      ease: "power2.out",
+      duration: 0.5,
+    }, 0);
+
+    tl.to(videoRef.current, {
+      borderRadius: "0px",
+      ease: "power2.out",
+      duration: 0.5,
+    }, 0);
+
+    // Fade the supporting subtitle text block out first during the scale zoom
+    tl.to(subRef.current, {
+      opacity: 0,
+      y: -40,
+      ease: "power2.out",
+      duration: 0.5,
+    }, 0);
+
+    // Fade out the dark overlay during Stage 1 so natural golden-hour colors shine in full screen
+    tl.to(overlayRef.current, {
+      opacity: 0,
+      ease: "power2.out",
+      duration: 0.5,
+    }, 0);
+
+    // Stage 2: Hold full-screen hero and HEMANTH SAI name anchor briefly (0.5 to 0.75)
+    tl.to({}, { duration: 0.25 });
+
+    // Stage 3: Fade out HEMANTH SAI name anchor, the video/frame, and fade in next section stationary (0.75 to 1.0)
+    tl.to(nameRef.current, {
+      opacity: 0,
+      y: -30,
+      ease: "power1.inOut",
+      duration: 0.25,
+    }, 0.75);
+
+    tl.to(frameRef.current, {
+      opacity: 0,
+      ease: "power1.inOut",
+      duration: 0.25,
+    }, 0.75);
+
+    // Keep the next section (#welcome) and all its subsequent siblings stationary
+    // relative to the viewport while it fades in, then release them to scroll normally.
+    tl.fromTo(
+      ["#welcome", "#welcome ~ *"],
+      {
+        y: () => -window.innerHeight * 1.5,
+        opacity: 0,
+      },
+      {
+        y: () => -window.innerHeight * 1.0,
+        opacity: 1,
+        ease: "none",
+        duration: 0.25,
+      },
+      0.75
+    );
+
+    // Cleanup triggers and styles on unmount
     return () => {
-      window.removeEventListener("scroll", updateScene);
-      window.removeEventListener("resize", updateScene);
+      if (tl.scrollTrigger) tl.scrollTrigger.kill();
+      tl.kill();
+      gsap.set(["#welcome", "#welcome ~ *"], { clearProps: "all" });
     };
   }, []);
 
   return (
-    <section ref={sectionRef} id="hero" className="relative h-[185vh] bg-[#090a0b] text-white">
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden px-5 py-24 sm:px-8 lg:px-12">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_72%_11%,rgba(255,255,255,.10),transparent_30%),radial-gradient(ellipse_at_18%_95%,rgba(255,255,255,.045),transparent_36%),linear-gradient(128deg,#08090a_0%,#17191b_47%,#08090a_100%)]" />
-        <div className="pointer-events-none absolute inset-0 opacity-[.16] [background-image:linear-gradient(105deg,transparent_0%,rgba(255,255,255,.075)_43%,transparent_51%),repeating-linear-gradient(115deg,rgba(255,255,255,.022)_0px,rgba(255,255,255,.022)_1px,transparent_1px,transparent_8px)]" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#090a0b] via-[#090a0b]/70 to-transparent" />
+    <section 
+      ref={heroRef}
+      id="hero" 
+      className="relative w-full h-screen overflow-hidden text-white flex items-center justify-center"
+      style={{
+        background: "radial-gradient(circle at center, #242629 0%, #151618 60%, #0a0a0b 100%)"
+      }}
+    >
+      {/* Centering Flex Wrapper */}
+      <div className="absolute inset-0 flex items-center justify-center p-6 md:p-12 lg:p-16 z-10 pointer-events-none">
+        
+        {/* Premium Apple-inspired Titanium Frame */}
+        <div 
+          ref={frameRef} 
+          className="relative w-[80vw] h-[80vh] overflow-hidden rounded-[2.5rem] border border-white/12 bg-[#17181b] p-3 shadow-[0_40px_120px_rgba(0,0,0,0.85)] pointer-events-auto flex items-center justify-center"
+          style={{
+            filter: "blur(3px)",
+            transformOrigin: "center center",
+            willChange: "transform, filter, opacity",
+          }}
+        >
+          {/* Background Video */}
+          <video
+            ref={videoRef}
+            src={GENESIS_VIDEO}
+            className="w-full h-full object-cover rounded-[1.8rem]"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            style={{
+              transformOrigin: "center center",
+              willChange: "transform, border-radius",
+            }}
+          />
 
-        <div className="relative mx-auto grid w-full max-w-[1560px] items-center gap-8 lg:grid-cols-[minmax(340px,.75fr)_minmax(620px,1.25fr)] lg:gap-10 xl:gap-16">
-          <div ref={copyRef} className="relative z-10 max-w-[620px] will-change-transform">
-            <p className="mb-7 flex items-center gap-3 font-outfit text-[10px] font-black uppercase tracking-[0.24em] text-white/60 sm:text-xs sm:tracking-[0.31em]">
-              <Sparkles className="h-4 w-4 text-[#d9dbde]" />
-              AI / SOFTWARE / DESIGN / DISCIPLINE
-            </p>
+          {/* Subtle Dark Overlay */}
+          <div 
+            ref={overlayRef}
+            className="absolute inset-0 z-10 pointer-events-none"
+            style={{
+              background: "linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.42), rgba(0,0,0,0.60))",
+              willChange: "opacity",
+            }}
+          />
 
-            <h1 className="font-syne text-[clamp(4.1rem,10vw,9.4rem)] font-black uppercase leading-[0.79] tracking-[-0.095em] text-[#f5f5f4]">
-              Learning<br />
-              by<br />
-              building.
-            </h1>
+          {/* Text Overlay inside the frame for natural camera scaling feel */}
+          <div 
+            className="absolute inset-y-0 right-0 w-[50%] flex items-center justify-start px-8 md:px-16 z-20 pointer-events-none"
+          >
+            <div className="max-w-md text-left flex flex-col items-start">
+              
+              {/* Name Anchor (stays visible longer, fades in Stage 3) */}
+              <div 
+                ref={nameRef}
+                style={{
+                  willChange: "transform, opacity",
+                }}
+              >
+                <h1 className="font-instrument text-[clamp(2.8rem,5.5vw,5rem)] tracking-[0.08em] text-white font-normal uppercase leading-none mb-6">
+                  Hemanth Sai
+                </h1>
+              </div>
 
-            <p className="mt-8 max-w-xl text-base font-medium leading-relaxed text-white/76 sm:text-xl">
-              I&apos;m <span className="font-bold text-white">Hemanth Sai</span>, a CSE student at GITAM University, Visakhapatnam — building at the intersection of AI, software, and design.
-            </p>
+              {/* Supporting Subtitles (fades first in Stage 1) */}
+              <div 
+                ref={subRef}
+                className="flex flex-col items-start"
+                style={{
+                  willChange: "transform, opacity",
+                }}
+              >
+                <p className="font-instrument italic text-xl sm:text-2xl md:text-3xl text-stone-300/90 leading-tight mb-8">
+                  Learning by building.
+                </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-[0.17em] text-white/58 sm:mt-9 sm:text-xs">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/[0.045] px-4 py-3 backdrop-blur-xl">
-                <MapPin className="h-3.5 w-3.5 text-white/72" /> Visakhapatnam, India
-              </span>
-              <span className="rounded-full border border-white/14 bg-white/[0.045] px-4 py-3 backdrop-blur-xl">GITAM / CSE</span>
-            </div>
-
-            <a href="#welcome" className="group mt-8 inline-flex items-center gap-3 rounded-full border border-white/18 bg-white/[0.06] px-5 py-3.5 font-outfit text-[10px] font-black uppercase tracking-[0.18em] text-white transition duration-500 hover:border-white/35 hover:bg-white/[0.11] sm:mt-10 sm:px-6 sm:text-xs">
-              Explore my story
-              <ArrowDownRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:translate-y-0.5" />
-            </a>
-          </div>
-
-          <div className="relative flex min-h-[280px] items-center justify-center lg:min-h-[540px]">
-            <div ref={mediaRef} className="relative w-full max-w-[1020px] will-change-transform" style={{ transform: "scale(.75)", transformOrigin: "50% 50%" }}>
-              <div className="absolute -inset-[1px] rounded-[2rem] bg-gradient-to-br from-white/45 via-white/10 to-white/0 opacity-90 sm:rounded-[2.7rem]" />
-              <div className="relative overflow-hidden rounded-[2rem] border border-white/16 bg-[#141618] p-2 shadow-[0_44px_150px_rgba(0,0,0,.68)] sm:rounded-[2.7rem] sm:p-3">
-                <div className="relative aspect-video overflow-hidden rounded-[1.55rem] bg-[radial-gradient(ellipse_at_82%_22%,rgba(255,255,255,.12),transparent_30%),linear-gradient(125deg,#111315_0%,#25282b_48%,#0a0b0c_100%)] sm:rounded-[2.15rem]">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 w-[52%] bg-[linear-gradient(100deg,rgba(255,255,255,.05),transparent_64%)]" />
-                  <div className="pointer-events-none absolute left-[8%] top-[13%] h-[1px] w-[34%] bg-white/18" />
-                  <p className="absolute left-[8%] top-[17%] font-mono text-[9px] font-bold uppercase tracking-[.31em] text-white/50">The builder behind the screen</p>
-                  <img src={INTRO_IMAGE} alt="Hemanth Sai in Visakhapatnam" className="absolute bottom-0 right-[3%] z-10 h-full w-[63%] object-contain object-bottom" loading="eager" />
-                  <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(90deg,rgba(8,9,10,.14),transparent_44%,rgba(0,0,0,.06))]" />
-                  <div className="pointer-events-none absolute inset-0 z-30 shadow-[inset_0_0_0_1px_rgba(255,255,255,.13),inset_0_0_90px_rgba(0,0,0,.26)]" />
-                  <div className="absolute bottom-4 left-4 right-4 z-40 flex items-end justify-between border-t border-white/12 pt-3 sm:bottom-6 sm:left-6 sm:right-6 sm:pt-4">
-                    <div>
-                      <p className="font-outfit text-[9px] font-black uppercase tracking-[0.22em] text-white/62 sm:text-[10px]">Hemanth Sai / 2026</p>
-                      <p className="mt-1 font-syne text-sm font-black uppercase tracking-[-0.045em] text-white sm:text-base">Curiosity into craft.</p>
-                    </div>
-                    <span className="hidden rounded-full border border-white/20 bg-black/20 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.18em] text-white/70 backdrop-blur-md sm:block">Visakhapatnam</span>
-                  </div>
+                <div className="flex flex-col gap-1.5 font-outfit text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-white/50 leading-relaxed">
+                  <p>CSE Student</p>
+                  <p>GITAM University, Visakhapatnam</p>
                 </div>
               </div>
+
             </div>
           </div>
-        </div>
 
-        <p className="absolute bottom-8 left-1/2 -translate-x-1/2 font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-white/35">Scroll to enter</p>
+        </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 pointer-events-none flex flex-col items-center gap-2">
+        <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-white/45">Scroll to enter</span>
+        <div className="w-[1px] h-6 bg-gradient-to-b from-white/40 to-transparent animate-pulse" />
       </div>
     </section>
   );
