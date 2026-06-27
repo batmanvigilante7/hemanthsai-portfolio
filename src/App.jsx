@@ -6,6 +6,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 import Navbar from "./components/Navbar";
+import VideoHero from "./components/VideoHero";
 import Hero from "./components/Hero";
 import Welcome from "./components/Welcome";
 import IdentityStack from "./components/IdentityStack";
@@ -45,6 +46,7 @@ export default function App() {
       <Navbar />
 
       <main className="relative z-10 w-full">
+        <VideoHero />
         <Hero />
         <Welcome />
         <IdentityStack />
