@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { ArrowDownRight, MapPin, Sparkles } from "lucide-react";
 
-const INTRO_IMAGE = "data:image/webp;base64,UklGRsK+AABXRUJQVlA4ILa+AAA";
+const INTRO_IMAGE = "https://batmanvigilante7.github.io/hemanthsai/assets/hero-current.webp.webp";
 
 export default function Hero() {
   const sectionRef = useRef(null);
@@ -78,11 +78,14 @@ export default function Hero() {
             <div ref={mediaRef} className="relative w-full max-w-[1020px] will-change-transform" style={{ transform: "scale(.75)", transformOrigin: "50% 50%" }}>
               <div className="absolute -inset-[1px] rounded-[2rem] bg-gradient-to-br from-white/45 via-white/10 to-white/0 opacity-90 sm:rounded-[2.7rem]" />
               <div className="relative overflow-hidden rounded-[2rem] border border-white/16 bg-[#141618] p-2 shadow-[0_44px_150px_rgba(0,0,0,.68)] sm:rounded-[2.7rem] sm:p-3">
-                <div className="relative aspect-video overflow-hidden rounded-[1.55rem] bg-[#111214] sm:rounded-[2.15rem]">
-                  <img src={INTRO_IMAGE} alt="Hemanth Sai in Visakhapatnam" className="h-full w-full object-cover" loading="eager" />
-                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.025),transparent_32%,rgba(0,0,0,.22))]" />
-                  <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_0_1px_rgba(255,255,255,.13),inset_0_0_90px_rgba(0,0,0,.26)]" />
-                  <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between border-t border-white/12 pt-3 sm:bottom-6 sm:left-6 sm:right-6 sm:pt-4">
+                <div className="relative aspect-video overflow-hidden rounded-[1.55rem] bg-[radial-gradient(ellipse_at_82%_22%,rgba(255,255,255,.12),transparent_30%),linear-gradient(125deg,#111315_0%,#25282b_48%,#0a0b0c_100%)] sm:rounded-[2.15rem]">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 w-[52%] bg-[linear-gradient(100deg,rgba(255,255,255,.05),transparent_64%)]" />
+                  <div className="pointer-events-none absolute left-[8%] top-[13%] h-[1px] w-[34%] bg-white/18" />
+                  <p className="absolute left-[8%] top-[17%] font-mono text-[9px] font-bold uppercase tracking-[.31em] text-white/50">The builder behind the screen</p>
+                  <img src={INTRO_IMAGE} alt="Hemanth Sai in Visakhapatnam" className="absolute bottom-0 right-[3%] z-10 h-full w-[63%] object-contain object-bottom" loading="eager" />
+                  <div className="pointer-events-none absolute inset-0 z-20 bg-[linear-gradient(90deg,rgba(8,9,10,.14),transparent_44%,rgba(0,0,0,.06))]" />
+                  <div className="pointer-events-none absolute inset-0 z-30 shadow-[inset_0_0_0_1px_rgba(255,255,255,.13),inset_0_0_90px_rgba(0,0,0,.26)]" />
+                  <div className="absolute bottom-4 left-4 right-4 z-40 flex items-end justify-between border-t border-white/12 pt-3 sm:bottom-6 sm:left-6 sm:right-6 sm:pt-4">
                     <div>
                       <p className="font-outfit text-[9px] font-black uppercase tracking-[0.22em] text-white/62 sm:text-[10px]">Hemanth Sai / 2026</p>
                       <p className="mt-1 font-syne text-sm font-black uppercase tracking-[-0.045em] text-white sm:text-base">Curiosity into craft.</p>
