@@ -1,252 +1,276 @@
-import React, { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { FaWhatsapp, FaInstagram, FaLinkedinIn, FaGithub } from "react-icons/fa";
-import heroPortrait from "../assets/hero-portrait.jpg";
+import React, { useEffect, useRef, useState } from "react";
+import { Globe, ArrowRight } from "lucide-react";
 
-gsap.registerPlugin(ScrollTrigger);
+// Custom inline SVG icons because brand icons are omitted in this environment's lucide-react
+const Instagram = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+  </svg>
+);
+
+const Twitter = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+  </svg>
+);
 
 export default function Hero() {
-  const containerRef = useRef(null);
-  const textContainerRef = useRef(null);
-  const subtitleRef = useRef(null);
-  const titleLine1Ref = useRef(null);
-  const titleLine2Ref = useRef(null);
-  const rollWrapperRef = useRef(null);
-  const rollTextRef = useRef(null);
-  const descRef = useRef(null);
-  const socialIconsRef = useRef(null);
-  const imageContainerRef = useRef(null);
-  const imageRef = useRef(null);
+  const videoRef = useRef(null);
+  const [opacity, setOpacity] = useState(0);
+  const opacityRef = useRef(0);
+  const requestRef = useRef(null);
+  const fadingOutRef = useRef(false);
 
-  const words = ["Developer", "Freelancer", "Designer", "Creator"];
+  // Video URL resolving for both local development and GitHub Pages deployment
+  const VIDEO_URL = `${import.meta.env.BASE_URL}man-typing-builder.mp4`;
 
-  // 1. Continuous Vertical Word Roll Animation
-  useEffect(() => {
-    let currentIndex = 0;
-    const rotateWords = () => {
-      const nextIndex = (currentIndex + 1) % words.length;
-      const tl = gsap.timeline();
-      
-      if (!rollTextRef.current) return;
+  // Animate opacity smoothly using JS requestAnimationFrame
+  const animateOpacity = (target, duration) => {
+    if (requestRef.current !== null) {
+      cancelAnimationFrame(requestRef.current);
+    }
 
-      tl.to(rollTextRef.current, {
-        yPercent: -100,
-        opacity: 0,
-        duration: 0.45,
-        ease: "power2.in",
-        onComplete: () => {
-          if (rollTextRef.current) {
-            rollTextRef.current.innerText = words[nextIndex];
-            gsap.set(rollTextRef.current, { yPercent: 100, opacity: 0 });
-          }
-        }
-      });
-      
-      tl.to(rollTextRef.current, {
-        yPercent: 0,
-        opacity: 1,
-        duration: 0.5,
-        ease: "power2.out"
-      });
-      
-      currentIndex = nextIndex;
-    };
-    
-    const interval = setInterval(rotateWords, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    const startOpacity = opacityRef.current;
+    const startTime = performance.now();
 
-  // 2. GSAP Entrance Animations (Fade & Upward) & ScrollTrigger Parallax
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // A. Entrance Animation sequence
-      const introTimeline = gsap.timeline({ defaults: { ease: "power4.out" } });
+    const step = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const current = startOpacity + (target - startOpacity) * progress;
+      setOpacity(current);
+      opacityRef.current = current;
 
-      gsap.set(subtitleRef.current, { opacity: 0, y: 25 });
-      gsap.set(titleLine1Ref.current, { opacity: 0, y: 40 });
-      gsap.set(titleLine2Ref.current, { opacity: 0, y: 40 });
-      gsap.set(rollWrapperRef.current, { opacity: 0, y: 20 });
-      gsap.set(descRef.current, { opacity: 0, y: 30 });
-      
-      if (socialIconsRef.current) {
-        gsap.set(socialIconsRef.current.children, { opacity: 0, y: 20 });
+      if (progress < 1) {
+        requestRef.current = requestAnimationFrame(step);
+      } else {
+        requestRef.current = null;
       }
-      gsap.set(imageContainerRef.current, { opacity: 0, scale: 0.95 });
+    };
 
-      introTimeline
-        .to(subtitleRef.current, { opacity: 1, y: 0, duration: 0.9 })
-        .to(titleLine1Ref.current, { opacity: 1, y: 0, duration: 1.1 }, "-=0.7")
-        .to(titleLine2Ref.current, { opacity: 1, y: 0, duration: 1.1 }, "-=0.9")
-        .to(rollWrapperRef.current, { opacity: 1, y: 0, duration: 0.8 }, "-=0.9")
-        .to(descRef.current, { opacity: 1, y: 0, duration: 0.9 }, "-=0.7")
-        .to(socialIconsRef.current.children, { opacity: 1, y: 0, stagger: 0.1, duration: 0.7 }, "-=0.7")
-        .to(imageContainerRef.current, { opacity: 1, scale: 1, duration: 1.4, ease: "power3.out" }, "-=1.5");
+    requestRef.current = requestAnimationFrame(step);
+  };
 
-      // B. ScrollTrigger Parallax Animation for Split Sections
-      // Left Text Content: Translate upward and fade out on scroll
-      gsap.to(textContainerRef.current, {
-        y: -50,
-        opacity: 0,
-        ease: "none",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: 1.2,
-        }
-      });
+  // Fade in when the video can play
+  const handleCanPlay = () => {
+    if (opacityRef.current === 0 && !fadingOutRef.current) {
+      animateOpacity(1, 500);
+    }
+  };
 
-      // Right Image Content: Parallax vertical movement (Translate downward on scroll)
-      gsap.to(imageRef.current, {
-        y: 100,
-        ease: "none",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: 1.2,
-        }
-      });
-    }, containerRef);
+  // Monitor video playback time to trigger early fade-out
+  const handleTimeUpdate = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const remainingTime = video.duration - video.currentTime;
+
+    // Trigger fade-out when 0.55 seconds remain before the video ends
+    if (remainingTime <= 0.55 && !fadingOutRef.current) {
+      fadingOutRef.current = true;
+      animateOpacity(0, 500);
+    }
+  };
+
+  // Custom ended callback for loop restart and fade back in
+  const handleEnded = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Force opacity to 0
+    setOpacity(0);
+    opacityRef.current = 0;
+
+    // Wait 100ms, then reset currentTime and play
+    setTimeout(() => {
+      video.currentTime = 0;
+      video.play()
+        .then(() => {
+          fadingOutRef.current = false;
+          // Fade back to opacity 1
+          animateOpacity(1, 500);
+        })
+        .catch((err) => {
+          console.error("Video loop playback failed:", err);
+        });
+    }, 100);
+  };
+
+  // Playback mount checking & frame cleanup
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video && video.readyState >= 3) {
+      animateOpacity(1, 500);
+    }
 
     return () => {
-      ctx.revert();
+      if (requestRef.current !== null) {
+        cancelAnimationFrame(requestRef.current);
+      }
     };
   }, []);
 
   return (
     <section
-      ref={containerRef}
       id="hero"
-      className="relative min-h-screen w-full bg-white text-black flex items-center justify-center py-24 sm:py-32 px-6 sm:px-12 md:px-16 lg:px-24 overflow-hidden select-none"
+      className="relative min-h-screen bg-black text-white flex flex-col justify-between overflow-hidden select-none z-10"
     >
-      {/* Premium Minimal Grid Overlay */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
-        backgroundImage: "radial-gradient(circle, black 1.5px, transparent 1.5px)",
-        backgroundSize: "24px 24px"
-      }} />
+      {/* Background Video */}
+      <video
+        ref={videoRef}
+        src={VIDEO_URL}
+        autoPlay
+        muted
+        playsInline
+        onCanPlay={handleCanPlay}
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={handleEnded}
+        style={{ opacity: opacity }}
+        className="absolute inset-0 w-full h-full object-cover object-center z-0 pointer-events-none transition-none"
+      />
 
-      {/* Styled text outlines for typography selection */}
-      <style>{`
-        .stroke-text-black {
-          color: transparent;
-          -webkit-text-stroke: 2px #000000;
-        }
-        @media (max-width: 640px) {
-          .stroke-text-black {
-            -webkit-text-stroke: 1px #000000;
-          }
-        }
-      `}</style>
+      {/* Subtle cinematic black overlay */}
+      <div className="absolute inset-0 bg-black/35 z-[1] pointer-events-none" />
 
-      {/* Main Split-Screen Container */}
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 items-center relative z-10">
-        
-        {/* Left Section: Text Content & Branding */}
-        <div ref={textContainerRef} className="col-span-1 lg:col-span-7 flex flex-col justify-center text-left">
-          
-          {/* Subtitle */}
-          <div
-            ref={subtitleRef}
-            className="flex items-center gap-3 font-outfit text-xs sm:text-sm font-bold tracking-[0.35em] text-[#facc15] uppercase mb-4 sm:mb-6"
-          >
-            <span className="w-8 h-[2px] bg-[#facc15]" />
-            <span>Creative Developer</span>
+      {/* NAVBAR */}
+      <nav className="relative z-20 w-full px-6 py-6 shrink-0">
+        <div className="liquid-glass max-w-5xl mx-auto rounded-full px-6 py-3 flex items-center justify-between">
+          {/* Left Branding */}
+          <div className="flex items-center gap-2 relative z-10">
+            <Globe className="w-4 h-4 text-white" />
+            <span className="font-mono text-xs font-black uppercase tracking-[0.2em] text-white">
+              Asme
+            </span>
           </div>
 
-          {/* Main Title Heading (12vw desktop responsive styling) */}
-          <h1 className="font-syne font-black text-[9.5vw] sm:text-[8vw] lg:text-[6.5vw] xl:text-[6vw] tracking-tighter leading-[0.9] uppercase mb-4 select-none">
-            <span ref={titleLine1Ref} className="block text-black">
-              Hello, I'm
-            </span>
-            <span ref={titleLine2Ref} className="block stroke-text-black">
-              Hemanth Sai
-            </span>
+          {/* Center Navigation Links (Hidden on Mobile) */}
+          <div className="hidden md:flex items-center gap-8 relative z-10">
+            <a
+              href="#features"
+              className="font-sans text-[11px] font-medium tracking-wider text-white/60 hover:text-white transition duration-300"
+            >
+              Features
+            </a>
+            <a
+              href="#pricing"
+              className="font-sans text-[11px] font-medium tracking-wider text-white/60 hover:text-white transition duration-300"
+            >
+              Pricing
+            </a>
+            <a
+              href="#about"
+              className="font-sans text-[11px] font-medium tracking-wider text-white/60 hover:text-white transition duration-300"
+            >
+              About
+            </a>
+          </div>
+
+          {/* Right Action Links */}
+          <div className="flex items-center gap-4 relative z-10">
+            <a
+              href="#signup"
+              className="font-sans text-[11px] font-medium tracking-wider text-white/60 hover:text-white transition duration-300"
+            >
+              Sign Up
+            </a>
+            <a
+              href="#login"
+              className="liquid-glass rounded-full px-4 py-1.5 font-sans text-[11px] font-medium tracking-wider text-white hover:bg-white/[0.05] transition duration-300"
+            >
+              Login
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      {/* HERO CONTENT */}
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-6 py-12 relative z-10 -translate-y-[20%]">
+        <div className="max-w-2xl mx-auto flex flex-col items-center gap-8">
+          {/* Title */}
+          <h1
+            style={{ fontFamily: "'Instrument Serif', serif" }}
+            className="text-5xl md:text-6xl lg:text-7xl font-normal tracking-tight text-white whitespace-nowrap"
+          >
+            Built for the curious
           </h1>
 
-          {/* Animated Rolling Word Selector */}
-          <div
-            ref={rollWrapperRef}
-            className="h-[1.4em] overflow-hidden relative mb-6 sm:mb-8 font-syne font-black text-2xl sm:text-4xl md:text-5xl uppercase tracking-wider text-[#facc15]"
-          >
-            <span ref={rollTextRef} className="absolute left-0 top-0 block">
-              Developer
-            </span>
+          {/* Email input field inside rounded liquid glass pill */}
+          <div className="liquid-glass rounded-full w-full max-w-md p-1.5 flex items-center justify-between gap-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="bg-transparent border-none outline-none text-white text-sm px-4 py-2 w-full placeholder-white/40"
+            />
+            <button className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition duration-300 shrink-0 cursor-pointer">
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
 
-          {/* Intro Description */}
-          <p
-            ref={descRef}
-            className="font-outfit text-base sm:text-lg md:text-xl text-zinc-600 leading-relaxed font-light tracking-wide max-w-xl mb-8 sm:mb-12"
-          >
-            Passionate Web Developer crafting modern, interactive and premium digital experiences with creative UI animations and futuristic design aesthetics.
-          </p>
-
-          {/* Social Media Rounded Premium Icon Buttons */}
-          <div ref={socialIconsRef} className="flex items-center gap-4">
-            <a
-              href="https://wa.me/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="WhatsApp"
-              className="w-12 h-12 rounded-full border border-black/10 bg-zinc-50 flex items-center justify-center text-zinc-700 transition-all duration-300 hover:bg-[#25D366] hover:text-white hover:border-[#25D366] hover:shadow-[0_0_20px_rgba(37,211,102,0.45)] hover:-translate-y-1 cursor-pointer"
-            >
-              <FaWhatsapp className="w-5 h-5 transition-colors duration-300" />
-            </a>
-            <a
-              href="https://instagram.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-              className="w-12 h-12 rounded-full border border-black/10 bg-zinc-50 flex items-center justify-center text-zinc-700 transition-all duration-300 hover:bg-[#E1306C] hover:text-white hover:border-[#E1306C] hover:shadow-[0_0_20px_rgba(225,48,108,0.45)] hover:-translate-y-1 cursor-pointer"
-            >
-              <FaInstagram className="w-5 h-5 transition-colors duration-300" />
-            </a>
-            <a
-              href="https://linkedin.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn"
-              className="w-12 h-12 rounded-full border border-black/10 bg-zinc-50 flex items-center justify-center text-zinc-700 transition-all duration-300 hover:bg-[#0077B5] hover:text-white hover:border-[#0077B5] hover:shadow-[0_0_20px_rgba(0,119,181,0.45)] hover:-translate-y-1 cursor-pointer"
-            >
-              <FaLinkedinIn className="w-5 h-5 transition-colors duration-300" />
-            </a>
-            <a
-              href="https://github.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub"
-              className="w-12 h-12 rounded-full border border-black/10 bg-zinc-50 flex items-center justify-center text-zinc-700 transition-all duration-300 hover:bg-black hover:text-white hover:border-black hover:shadow-[0_0_20px_rgba(0,0,0,0.35)] hover:-translate-y-1 cursor-pointer"
-            >
-              <FaGithub className="w-5 h-5 transition-colors duration-300" />
-            </a>
+          {/* Subtitle */}
+          <div className="flex flex-col gap-1 max-w-md mx-auto">
+            <p className="text-xs font-normal text-white/65 leading-relaxed tracking-wide">
+              Stay updated with the latest news and insights.
+            </p>
+            <p className="text-xs font-normal text-white/65 leading-relaxed tracking-wide">
+              Subscribe to our newsletter today and never miss out on exciting updates.
+            </p>
           </div>
 
+          {/* Manifesto Button */}
+          <button className="liquid-glass rounded-full px-7 py-2.5 font-sans text-xs font-semibold tracking-wider text-white hover:bg-white/[0.05] transition duration-300 cursor-pointer">
+            Manifesto
+          </button>
         </div>
-
-        {/* Right Section: Hero Image with Parallax & Scaling Frame */}
-        <div ref={imageContainerRef} className="col-span-1 lg:col-span-5 flex justify-center items-center">
-          <div className="relative w-full max-w-[380px] lg:max-w-none aspect-[3/4]">
-            {/* Ambient Yellow soft glow behind image frame */}
-            <div className="absolute -inset-6 bg-[#facc15]/10 rounded-[3rem] blur-3xl z-0 pointer-events-none" />
-            
-            {/* Premium Frame with drop-shadow-xl */}
-            <div className="relative w-full h-full overflow-hidden rounded-[2.5rem] bg-zinc-50 border border-zinc-100 shadow-2xl z-10">
-              <img
-                ref={imageRef}
-                src={heroPortrait}
-                alt="Hemanth Sai Portrait"
-                className="w-full h-full object-cover select-none scale-105"
-                loading="eager"
-              />
-              {/* Vertical subtle overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent pointer-events-none" />
-            </div>
-          </div>
-        </div>
-
       </div>
+
+      {/* FOOTER */}
+      <footer className="relative z-10 py-8 px-6 text-center shrink-0">
+        <div className="flex items-center justify-center gap-4">
+          <a
+            href="https://instagram.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="liquid-glass w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/[0.05] transition duration-300"
+          >
+            <Instagram className="w-4 h-4" />
+          </a>
+          <a
+            href="https://twitter.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="liquid-glass w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/[0.05] transition duration-300"
+          >
+            <Twitter className="w-4 h-4" />
+          </a>
+          <a
+            href="https://globe.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="liquid-glass w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/[0.05] transition duration-300"
+          >
+            <Globe className="w-4 h-4" />
+          </a>
+        </div>
+      </footer>
     </section>
   );
 }
