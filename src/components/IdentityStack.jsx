@@ -1,5 +1,9 @@
-import React, { useRef, useState } from "react";
-import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const asset = (fileName) => `${import.meta.env.BASE_URL}assets/${fileName}`;
 const posterAsset = asset("identity-cinematic-poster.webp");
@@ -55,10 +59,14 @@ const identitySignals = [
   },
 ];
 
+const POSTER_WIDTH = 1100;
+const POSTER_HEIGHT = 620;
+const PANEL_WIDTH = POSTER_WIDTH / 4;
+
 const joinedX = [-412.5, -137.5, 137.5, 412.5];
-const tableX = [-390, -130, 130, 390];
-const tableY = [0, -20, -20, 0];
-const tableRotateZ = [-5.5, -1.5, 1.5, 5.5];
+const tableX = [-420, -140, 140, 420];
+const tableY = [18, -26, -26, 18];
+const tableRotateZ = [-6, -2, 2, 6];
 
 function ImageFrame({ src, alt, title, objectPosition }) {
   return (
@@ -106,10 +114,18 @@ function SignalModal({ signal, onClose }) {
           >
             ×
           </button>
-          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/40">{signal.number} / Identity signal</p>
-          <h3 className="mt-5 font-syne text-[clamp(2.8rem,8vw,5.8rem)] font-black uppercase leading-[0.82] tracking-[-0.085em]">{signal.title}</h3>
-          <p className="mt-5 text-2xl font-black leading-tight tracking-[-0.04em] text-white/90">{signal.line}</p>
-          <p className="mt-6 text-base leading-relaxed text-white/65 sm:text-lg">{signal.story}</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/40">
+            {signal.number} / Identity signal
+          </p>
+          <h3 className="mt-5 font-syne text-[clamp(2.8rem,8vw,5.8rem)] font-black uppercase leading-[0.82] tracking-[-0.085em]">
+            {signal.title}
+          </h3>
+          <p className="mt-5 text-2xl font-black leading-tight tracking-[-0.04em] text-white/90">
+            {signal.line}
+          </p>
+          <p className="mt-6 text-base leading-relaxed text-white/65 sm:text-lg">
+            {signal.story}
+          </p>
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
               <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/35">Origin</p>
@@ -126,135 +142,233 @@ function SignalModal({ signal, onClose }) {
   );
 }
 
-function SplitFlipCard({ signal, index, progress, onOpen }) {
-  const x = useTransform(
-    progress,
-    [0, 0.20, 0.45, 0.90, 1.0],
-    [joinedX[index], joinedX[index], tableX[index], tableX[index], joinedX[index]]
-  );
-  const y = useTransform(
-    progress,
-    [0, 0.20, 0.45, 0.90, 1.0],
-    [0, 0, tableY[index], tableY[index], 0]
-  );
-  const rotateZ = useTransform(
-    progress,
-    [0, 0.20, 0.45, 0.90, 1.0],
-    [0, 0, tableRotateZ[index], tableRotateZ[index], 0]
-  );
-  const rotateY = useTransform(
-    progress,
-    [0, 0.45, 0.70, 0.90, 1.0],
-    [0, 0, 180, 180, 360]
-  );
-  const scale = useTransform(
-    progress,
-    [0, 0.20, 0.45, 0.90, 1.0],
-    [1, 1, 0.82, 0.82, 1]
-  );
-  const pointerEvents = useTransform(
-    progress,
-    (value) => (value > 0.60 && value < 0.90 ? "auto" : "none")
-  );
-  const joinedRadius = index === 0 ? "32px 0 0 32px" : index === 3 ? "0 32px 32px 0" : "0";
-  const radius = useTransform(
-    progress,
-    [0, 0.20, 0.45, 0.90, 1.0],
-    [joinedRadius, joinedRadius, "28px", "28px", joinedRadius]
-  );
-  const seamOpacity = useTransform(
-    progress,
-    [0, 0.20, 0.35, 0.90, 0.95, 1.0],
-    [0, 0, 0.35, 0.35, 0, 0]
-  );
-  const border = useTransform(
-    progress,
-    [0, 0.20, 0.45, 0.90, 0.95, 1.0],
-    ["1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,.14)", "1px solid rgba(255,255,255,.14)", "1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0)"]
-  );
-  const shadow = useTransform(
-    progress,
-    [0, 0.20, 0.45, 0.90, 0.95, 1.0],
-    ["0 0 0 rgba(0,0,0,0)", "0 0 0 rgba(0,0,0,0)", "0 32px 110px rgba(0,0,0,.62)", "0 32px 110px rgba(0,0,0,.62)", "0 0 0 rgba(0,0,0,0)", "0 0 0 rgba(0,0,0,0)"]
-  );
-
-  const posterWidth = 1100;
-  const posterHeight = 620;
-  const panelWidth = posterWidth / 4;
+function SplitFlipCard({ signal, index, onOpen, setCardRef, setInnerRef }) {
+  const joinedRadius = index === 0 ? "32px 0 0 32px" : index === 3 ? "0 32px 32px 0" : "0px";
 
   return (
-    <motion.button
+    <button
+      ref={(node) => setCardRef(index, node)}
       type="button"
       onClick={onOpen}
-      className="absolute left-1/2 top-1/2 border-0 bg-transparent p-0 text-left outline-none"
+      className="identity-card absolute left-1/2 top-1/2 border-0 bg-transparent p-0 text-left outline-none"
       style={{
-        width: panelWidth,
-        height: posterHeight,
-        x,
-        y,
-        rotateZ,
-        scale,
-        pointerEvents,
-        zIndex: 20 + index,
-        perspective: 1400,
+        width: PANEL_WIDTH,
+        height: POSTER_HEIGHT,
         transformStyle: "preserve-3d",
-        translateX: "-50%",
-        translateY: "-50%",
-        borderRadius: radius,
+        perspective: 1400,
+        borderRadius: joinedRadius,
+        pointerEvents: "none",
       }}
     >
-      {index > 0 && <motion.div className="pointer-events-none absolute left-0 top-[5%] z-50 h-[90%] w-px bg-white/30" style={{ opacity: seamOpacity }} />}
-      <motion.div className="relative h-full w-full" style={{ rotateY, transformStyle: "preserve-3d", borderRadius: radius }}>
-        <motion.div
-          className="absolute inset-0 overflow-hidden bg-[#070707] [backface-visibility:hidden]"
+      {index > 0 && (
+        <div className="identity-seam pointer-events-none absolute left-0 top-[5%] z-50 h-[90%] w-px bg-white/30 opacity-0" />
+      )}
+
+      <div
+        ref={(node) => setInnerRef(index, node)}
+        className="identity-card-inner relative h-full w-full"
+        style={{
+          transformStyle: "preserve-3d",
+          borderRadius: joinedRadius,
+        }}
+      >
+        <div
+          className="identity-front absolute inset-0 overflow-hidden bg-[#070707] [backface-visibility:hidden]"
           style={{
-            borderRadius: radius,
-            boxShadow: shadow,
-            border,
+            borderRadius: joinedRadius,
             backgroundImage: `url(${posterAsset})`,
-            backgroundSize: `${posterWidth}px ${posterHeight}px`,
-            backgroundPosition: `-${index * panelWidth}px 0px`,
+            backgroundSize: `${POSTER_WIDTH}px ${POSTER_HEIGHT}px`,
+            backgroundPosition: `-${index * PANEL_WIDTH}px 0px`,
             backgroundRepeat: "no-repeat",
           }}
         />
-        <motion.div
-          className="absolute inset-0 flex flex-col overflow-hidden bg-white/[0.065] text-white backdrop-blur-3xl [backface-visibility:hidden] [transform:rotateY(180deg)]"
-          style={{ borderRadius: radius, boxShadow: shadow, border }}
+
+        <div
+          className="identity-back absolute inset-0 flex flex-col overflow-hidden bg-white/[0.065] text-white backdrop-blur-3xl [backface-visibility:hidden] [transform:rotateY(180deg)]"
+          style={{ borderRadius: joinedRadius }}
         >
           <div className="h-[66%] border-b border-white/10">
             <ImageFrame {...signal} title={signal.title} />
           </div>
           <div className="flex flex-1 flex-col p-4">
             <div className="flex items-center justify-between gap-4">
-              <span className="font-mono text-[10px] font-black uppercase tracking-[0.26em] text-white/38">{signal.number}</span>
-              <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 font-mono text-[8px] font-black uppercase tracking-[0.16em] text-white/45">Open</span>
+              <span className="font-mono text-[10px] font-black uppercase tracking-[0.26em] text-white/38">
+                {signal.number}
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 font-mono text-[8px] font-black uppercase tracking-[0.16em] text-white/45">
+                Open
+              </span>
             </div>
-            <h3 className="mt-3 font-syne text-[clamp(1.45rem,2vw,2.1rem)] font-black uppercase leading-[0.84] tracking-[-0.085em] text-white">{signal.title}</h3>
-            <p className="mt-3 text-sm font-black leading-snug tracking-[-0.05em] text-white/88">{signal.line}</p>
+            <h3 className="mt-3 font-syne text-[clamp(1.45rem,2vw,2.1rem)] font-black uppercase leading-[0.84] tracking-[-0.085em] text-white">
+              {signal.title}
+            </h3>
+            <p className="mt-3 text-sm font-black leading-snug tracking-[-0.05em] text-white/88">
+              {signal.line}
+            </p>
           </div>
-        </motion.div>
-      </motion.div>
-    </motion.button>
+        </div>
+      </div>
+    </button>
   );
 }
 
 function DesktopIdentityArtifact({ onOpen }) {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const artifactScale = useTransform(scrollYProgress, [0, 0.45, 0.90, 1.0], [0.86, 0.82, 0.82, 0.86]);
+  const sectionRef = useRef(null);
+  const stageRef = useRef(null);
+  const cardsRef = useRef([]);
+  const innersRef = useRef([]);
+
+  const setCardRef = (index, node) => {
+    if (node) cardsRef.current[index] = node;
+  };
+
+  const setInnerRef = (index, node) => {
+    if (node) innersRef.current[index] = node;
+  };
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const stage = stageRef.current;
+    const cards = cardsRef.current.filter(Boolean);
+    const inners = innersRef.current.filter(Boolean);
+
+    if (!section || !stage || cards.length !== 4 || inners.length !== 4) return;
+
+    const ctx = gsap.context(() => {
+      ScrollTrigger.refresh();
+
+      gsap.set(stage, {
+        scale: 0.86,
+        transformPerspective: 1400,
+        transformStyle: "preserve-3d",
+      });
+
+      cards.forEach((card, index) => {
+        const joinedRadius = index === 0 ? "32px 0 0 32px" : index === 3 ? "0 32px 32px 0" : "0px";
+        gsap.set(card, {
+          xPercent: -50,
+          yPercent: -50,
+          x: joinedX[index],
+          y: 0,
+          rotateZ: 0,
+          scale: 1,
+          borderRadius: joinedRadius,
+          pointerEvents: "none",
+          zIndex: 20 + index,
+          force3D: true,
+        });
+        gsap.set(inners[index], {
+          rotateY: 0,
+          borderRadius: joinedRadius,
+          transformStyle: "preserve-3d",
+          force3D: true,
+        });
+        gsap.set(card.querySelectorAll(".identity-front, .identity-back"), {
+          borderRadius: joinedRadius,
+          boxShadow: "0 0 0 rgba(0,0,0,0)",
+          border: "1px solid rgba(255,255,255,0)",
+        });
+      });
+
+      const tl = gsap.timeline({
+        defaults: { ease: "none" },
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: "+=2600",
+          scrub: 0.9,
+          pin: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      tl.to(stage, { scale: 0.82, duration: 0.18 }, 0);
+
+      tl.to(cards, {
+        x: (index) => tableX[index],
+        y: (index) => tableY[index],
+        rotateZ: (index) => tableRotateZ[index],
+        scale: 0.82,
+        borderRadius: "28px",
+        duration: 0.24,
+        stagger: 0.015,
+      }, 0.18);
+
+      tl.to(cards.map((card) => card.querySelector(".identity-seam")).filter(Boolean), {
+        opacity: 0.35,
+        duration: 0.12,
+      }, 0.2);
+
+      tl.to(cards.map((card) => card.querySelectorAll(".identity-front, .identity-back")), {
+        borderRadius: "28px",
+        boxShadow: "0 32px 110px rgba(0,0,0,.62)",
+        border: "1px solid rgba(255,255,255,.14)",
+        duration: 0.24,
+      }, 0.18);
+
+      tl.to(inners, {
+        rotateY: 180,
+        duration: 0.26,
+        stagger: 0.018,
+      }, 0.43);
+
+      tl.set(cards, { pointerEvents: "auto" }, 0.66);
+      tl.to({}, { duration: 0.22 }, 0.68);
+      tl.set(cards, { pointerEvents: "none" }, 0.86);
+
+      tl.to(inners, {
+        rotateY: 360,
+        duration: 0.20,
+        stagger: 0.012,
+      }, 0.84);
+
+      tl.to(cards, {
+        x: (index) => joinedX[index],
+        y: 0,
+        rotateZ: 0,
+        scale: 1,
+        borderRadius: (index) => (index === 0 ? "32px 0 0 32px" : index === 3 ? "0 32px 32px 0" : "0px"),
+        duration: 0.14,
+      }, 0.94);
+
+      tl.to(cards.map((card) => card.querySelector(".identity-seam")).filter(Boolean), {
+        opacity: 0,
+        duration: 0.08,
+      }, 0.94);
+
+      tl.to(cards.map((card) => card.querySelectorAll(".identity-front, .identity-back")), {
+        boxShadow: "0 0 0 rgba(0,0,0,0)",
+        border: "1px solid rgba(255,255,255,0)",
+        duration: 0.12,
+      }, 0.94);
+
+      tl.to(stage, { scale: 0.86, duration: 0.10 }, 0.94);
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <div ref={ref} className="relative hidden h-[320vh] md:block">
-      <div className="sticky top-0 grid h-screen place-items-center overflow-visible">
-        <motion.div
+    <div ref={sectionRef} className="relative hidden min-h-screen md:block">
+      <div className="grid h-screen place-items-center overflow-visible">
+        <div
+          ref={stageRef}
           className="relative h-[620px] w-[1100px] origin-center"
-          style={{ scale: artifactScale, perspective: 1400, transformStyle: "preserve-3d" }}
+          style={{ perspective: 1400, transformStyle: "preserve-3d" }}
         >
           <div className="pointer-events-none absolute inset-0 -z-10 rounded-[42px] bg-white/[0.045] blur-[90px]" />
           {identitySignals.map((signal, index) => (
-            <SplitFlipCard key={signal.title} signal={signal} index={index} progress={scrollYProgress} onOpen={() => onOpen(index)} />
+            <SplitFlipCard
+              key={signal.title}
+              signal={signal}
+              index={index}
+              onOpen={() => onOpen(index)}
+              setCardRef={setCardRef}
+              setInnerRef={setInnerRef}
+            />
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
