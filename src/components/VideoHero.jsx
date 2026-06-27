@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowDownRight, Github, Linkedin, Mail } from "lucide-react";
+import { ArrowDownRight, Github, Mail } from "lucide-react";
+
+const LinkedInIcon = ({ className = "" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z" />
+    <rect width="4" height="12" x="2" y="9" />
+    <circle cx="4" cy="4" r="2" />
+  </svg>
+);
 
 export default function VideoHero() {
   const videoRef = useRef(null);
@@ -32,7 +40,7 @@ export default function VideoHero() {
 
   const handleTimeUpdate = () => {
     const video = videoRef.current;
-    if (!video || !video.duration) return;
+    if (!video || !Number.isFinite(video.duration)) return;
     const remaining = video.duration - video.currentTime;
     if (remaining <= 0.55 && !fadingOutRef.current) {
       fadingOutRef.current = true;
@@ -47,13 +55,20 @@ export default function VideoHero() {
     opacityRef.current = 0;
     setTimeout(() => {
       video.currentTime = 0;
-      video
-        .play()
-        .then(() => {
-          fadingOutRef.current = false;
-          animateOpacity(1, 500);
-        })
-        .catch(() => {});
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.then === "function") {
+        playPromise
+          .then(() => {
+            fadingOutRef.current = false;
+            animateOpacity(1, 500);
+          })
+          .catch(() => {
+            fadingOutRef.current = false;
+          });
+      } else {
+        fadingOutRef.current = false;
+        animateOpacity(1, 500);
+      }
     }, 100);
   };
 
@@ -110,7 +125,7 @@ export default function VideoHero() {
             </div>
             <div className="mt-8 flex gap-3 text-white/62">
               <a className="rounded-full border border-white/12 bg-white/[0.04] p-3 backdrop-blur-xl transition hover:text-white" href="https://github.com/batmanvigilante7" aria-label="GitHub"><Github className="h-4 w-4" /></a>
-              <a className="rounded-full border border-white/12 bg-white/[0.04] p-3 backdrop-blur-xl transition hover:text-white" href="https://www.linkedin.com/" aria-label="LinkedIn"><Linkedin className="h-4 w-4" /></a>
+              <a className="rounded-full border border-white/12 bg-white/[0.04] p-3 backdrop-blur-xl transition hover:text-white" href="https://www.linkedin.com/" aria-label="LinkedIn"><LinkedInIcon className="h-4 w-4" /></a>
               <a className="rounded-full border border-white/12 bg-white/[0.04] p-3 backdrop-blur-xl transition hover:text-white" href="mailto:hemanthsairoyal7@gmail.com" aria-label="Email"><Mail className="h-4 w-4" /></a>
             </div>
           </div>
