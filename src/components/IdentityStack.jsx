@@ -129,27 +129,54 @@ function SignalModal({ signal, onClose }) {
 function SplitFlipCard({ signal, index, progress, onOpen }) {
   const x = useTransform(
     progress,
-    [0, 0.18, 0.32, 0.46, 0.7, 0.82, 0.94, 1],
-    [joinedX[index], joinedX[index], joinedX[index], tableX[index], tableX[index], tableX[index], joinedX[index], joinedX[index]]
+    [0, 0.20, 0.45, 0.90, 1.0],
+    [joinedX[index], joinedX[index], tableX[index], tableX[index], joinedX[index]]
   );
   const y = useTransform(
     progress,
-    [0, 0.18, 0.32, 0.46, 0.7, 0.82, 0.94, 1],
-    [0, 0, 0, tableY[index], tableY[index], tableY[index], 0, 0]
+    [0, 0.20, 0.45, 0.90, 1.0],
+    [0, 0, tableY[index], tableY[index], 0]
   );
   const rotateZ = useTransform(
     progress,
-    [0, 0.18, 0.32, 0.46, 0.7, 0.82, 0.94, 1],
-    [0, 0, 0, tableRotateZ[index], tableRotateZ[index], tableRotateZ[index], 0, 0]
+    [0, 0.20, 0.45, 0.90, 1.0],
+    [0, 0, tableRotateZ[index], tableRotateZ[index], 0]
   );
-  const rotateY = useTransform(progress, [0, 0.42, 0.54, 0.72, 0.84, 1], [0, 0, 180, 180, 360, 360]);
-  const scale = useTransform(progress, [0, 0.46, 0.72, 1], [1, 0.82, 0.82, 1]);
-  const pointerEvents = useTransform(progress, (value) => (value > 0.54 && value < 0.72 ? "auto" : "none"));
+  const rotateY = useTransform(
+    progress,
+    [0, 0.45, 0.70, 0.90, 1.0],
+    [0, 0, 180, 180, 360]
+  );
+  const scale = useTransform(
+    progress,
+    [0, 0.20, 0.45, 0.90, 1.0],
+    [1, 1, 0.82, 0.82, 1]
+  );
+  const pointerEvents = useTransform(
+    progress,
+    (value) => (value > 0.60 && value < 0.90 ? "auto" : "none")
+  );
   const joinedRadius = index === 0 ? "32px 0 0 32px" : index === 3 ? "0 32px 32px 0" : "0";
-  const radius = useTransform(progress, [0, 0.32, 0.46, 0.82, 0.94, 1], [joinedRadius, joinedRadius, "28px", "28px", joinedRadius, joinedRadius]);
-  const seamOpacity = useTransform(progress, [0, 0.18, 0.34, 0.82, 0.94, 1], [0, 0, 0.35, 0.35, 0, 0]);
-  const border = useTransform(progress, [0, 0.32, 0.46, 0.82, 0.94, 1], ["1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,.14)", "1px solid rgba(255,255,255,.14)", "1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0)"]);
-  const shadow = useTransform(progress, [0, 0.32, 0.46, 0.82, 0.94, 1], ["0 0 0 rgba(0,0,0,0)", "0 0 0 rgba(0,0,0,0)", "0 32px 110px rgba(0,0,0,.62)", "0 32px 110px rgba(0,0,0,.62)", "0 0 0 rgba(0,0,0,0)", "0 0 0 rgba(0,0,0,0)"]);
+  const radius = useTransform(
+    progress,
+    [0, 0.20, 0.45, 0.90, 1.0],
+    [joinedRadius, joinedRadius, "28px", "28px", joinedRadius]
+  );
+  const seamOpacity = useTransform(
+    progress,
+    [0, 0.20, 0.35, 0.90, 0.95, 1.0],
+    [0, 0, 0.35, 0.35, 0, 0]
+  );
+  const border = useTransform(
+    progress,
+    [0, 0.20, 0.45, 0.90, 0.95, 1.0],
+    ["1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,.14)", "1px solid rgba(255,255,255,.14)", "1px solid rgba(255,255,255,0)", "1px solid rgba(255,255,255,0)"]
+  );
+  const shadow = useTransform(
+    progress,
+    [0, 0.20, 0.45, 0.90, 0.95, 1.0],
+    ["0 0 0 rgba(0,0,0,0)", "0 0 0 rgba(0,0,0,0)", "0 32px 110px rgba(0,0,0,.62)", "0 32px 110px rgba(0,0,0,.62)", "0 0 0 rgba(0,0,0,0)", "0 0 0 rgba(0,0,0,0)"]
+  );
 
   const posterWidth = 1100;
   const posterHeight = 620;
@@ -214,10 +241,10 @@ function SplitFlipCard({ signal, index, progress, onOpen }) {
 function DesktopIdentityArtifact({ onOpen }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const artifactScale = useTransform(scrollYProgress, [0, 0.46, 0.72, 1], [0.86, 0.82, 0.82, 0.86]);
+  const artifactScale = useTransform(scrollYProgress, [0, 0.45, 0.90, 1.0], [0.86, 0.82, 0.82, 0.86]);
 
   return (
-    <div ref={ref} className="relative hidden h-[190vh] md:block">
+    <div ref={ref} className="relative hidden h-[320vh] md:block">
       <div className="sticky top-0 grid h-screen place-items-center overflow-visible">
         <motion.div
           className="relative h-[620px] w-[1100px] origin-center"
