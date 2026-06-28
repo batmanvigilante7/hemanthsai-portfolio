@@ -1,9 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useRef, useState, useEffect } from "react";
+import { AnimatePresence, motion, useScroll, useTransform, cubicBezier } from "framer-motion";
 
 const asset = (fileName) => `${import.meta.env.BASE_URL}assets/${fileName}`;
 const posterAsset = asset("identity-cinematic-poster.webp");
@@ -64,9 +60,16 @@ const POSTER_HEIGHT = 620;
 const PANEL_WIDTH = POSTER_WIDTH / 4;
 
 const joinedX = [-412.5, -137.5, 137.5, 412.5];
-const tableX = [-430, -145, 145, 430];
+const tableX = [-220, -74, 74, 220];
 const tableY = [0, -18, -18, 0];
 const tableRotateZ = [-5.5, -1.5, 1.5, 5.5];
+
+// Easing Curve Creators
+const easeOutQuart = cubicBezier(0.25, 1, 0.5, 1);
+
+// ==========================================
+// SUBCOMPONENTS
+// ==========================================
 
 function ImageFrame({ src, alt, title, objectPosition }) {
   return (
@@ -89,7 +92,7 @@ function ImageFrame({ src, alt, title, objectPosition }) {
 function SignalModal({ signal, onClose }) {
   return (
     <motion.div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-2xl"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 px-4 py-6 backdrop-blur-2xl"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -129,11 +132,17 @@ function SignalModal({ signal, onClose }) {
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
               <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/35">Origin</p>
-              <p className="mt-2 text-sm font-bold uppercase tracking-[0.1em] text-white/85">{signal.origin}</p>
+              <p className="mt-2 text-sm font-bold uppercase tracking-[0.1em] text-white/85">
+                {signal.origin}
+              </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
-              <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/35">How it compounds</p>
-              <p className="mt-2 text-sm font-bold uppercase tracking-[0.1em] text-white/85">{signal.compound}</p>
+              <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/35">
+                How it compounds
+              </p>
+              <p className="mt-2 text-sm font-bold uppercase tracking-[0.1em] text-white/85">
+                {signal.compound}
+              </p>
             </div>
           </div>
         </div>
@@ -142,231 +151,381 @@ function SignalModal({ signal, onClose }) {
   );
 }
 
-function SplitFlipCard({ signal, index, onOpen, setCardRef, setInnerRef }) {
-  const joinedRadius = index === 0 ? "32px 0 0 32px" : index === 3 ? "0 32px 32px 0" : "0px";
-
-  return (
-    <button
-      ref={(node) => setCardRef(index, node)}
-      type="button"
-      onClick={onOpen}
-      className="identity-card absolute left-1/2 top-1/2 border-0 bg-transparent p-0 text-left outline-none"
-      style={{
-        width: PANEL_WIDTH,
-        height: POSTER_HEIGHT,
-        transformStyle: "preserve-3d",
-        perspective: 1400,
-        borderRadius: joinedRadius,
-        pointerEvents: "none",
-      }}
-    >
-      {index > 0 && (
-        <div className="identity-seam pointer-events-none absolute left-0 top-[5%] z-50 h-[90%] w-px bg-white/30 opacity-0" />
-      )}
-
-      <div
-        ref={(node) => setInnerRef(index, node)}
-        className="identity-card-inner relative h-full w-full"
-        style={{
-          transformStyle: "preserve-3d",
-          borderRadius: joinedRadius,
-        }}
-      >
-        <div
-          className="identity-front absolute inset-0 overflow-hidden bg-[#070707] [backface-visibility:hidden]"
-          style={{
-            borderRadius: joinedRadius,
-            backgroundImage: `url(${posterAsset})`,
-            backgroundSize: `${POSTER_WIDTH}px ${POSTER_HEIGHT}px`,
-            backgroundPosition: `-${index * PANEL_WIDTH}px 0px`,
-            backgroundRepeat: "no-repeat",
-          }}
-        />
-
-        <div
-          className="identity-back absolute inset-0 flex flex-col overflow-hidden bg-white/[0.065] text-white backdrop-blur-3xl [backface-visibility:hidden] [transform:rotateY(180deg)]"
-          style={{ borderRadius: joinedRadius }}
-        >
-          <div className="h-[66%] border-b border-white/10">
-            <ImageFrame {...signal} title={signal.title} />
-          </div>
-          <div className="flex flex-1 flex-col p-4">
-            <div className="flex items-center justify-between gap-4">
-              <span className="font-mono text-[10px] font-black uppercase tracking-[0.26em] text-white/38">
-                {signal.number}
-              </span>
-              <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 font-mono text-[8px] font-black uppercase tracking-[0.16em] text-white/45">
-                Open
-              </span>
-            </div>
-            <h3 className="mt-3 font-syne text-[clamp(1.45rem,2vw,2.1rem)] font-black uppercase leading-[0.84] tracking-[-0.085em] text-white">
-              {signal.title}
-            </h3>
-            <p className="mt-3 text-sm font-black leading-snug tracking-[-0.05em] text-white/88">
-              {signal.line}
-            </p>
-          </div>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function DesktopIdentityArtifact({ onOpen }) {
-  const sectionRef = useRef(null);
-  const stageRef = useRef(null);
-  const cardsRef = useRef([]);
-  const innersRef = useRef([]);
-
-  const setCardRef = (index, node) => {
-    if (node) cardsRef.current[index] = node;
-  };
-
-  const setInnerRef = (index, node) => {
-    if (node) innersRef.current[index] = node;
-  };
+function FloatingDust() {
+  const canvasRef = useRef(null);
 
   useEffect(() => {
-    const section = sectionRef.current;
-    const stage = stageRef.current;
-    const cards = cardsRef.current.filter(Boolean);
-    const inners = innersRef.current.filter(Boolean);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animationId;
 
-    if (!section || !stage || cards.length !== 4 || inners.length !== 4) return;
+    let width = (canvas.width = canvas.parentElement.offsetWidth || window.innerWidth);
+    let height = (canvas.height = canvas.parentElement.offsetHeight || window.innerHeight);
 
-    const ctx = gsap.context(() => {
-      const frontsAndBacks = cards.flatMap((card) => Array.from(card.querySelectorAll(".identity-front, .identity-back")));
-      const seams = cards.map((card) => card.querySelector(".identity-seam")).filter(Boolean);
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = canvas.parentElement.offsetWidth || window.innerWidth;
+      height = canvas.height = canvas.parentElement.offsetHeight || window.innerHeight;
+    };
 
-      gsap.set(stage, {
-        scale: 0.9,
-        y: 0,
-        transformPerspective: 1400,
-        transformStyle: "preserve-3d",
-        transformOrigin: "50% 50%",
+    window.addEventListener("resize", handleResize);
+
+    const particleCount = 35;
+    const particles = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 1.3 + 0.3,
+        vx: (Math.random() - 0.5) * 0.1,
+        vy: (Math.random() - 0.5) * 0.1 - 0.04, // Slow upward drift
+        opacity: Math.random() * 0.3 + 0.05,
       });
+    }
 
-      cards.forEach((card, index) => {
-        const joinedRadius = index === 0 ? "32px 0 0 32px" : index === 3 ? "0 32px 32px 0" : "0px";
-        gsap.set(card, {
-          xPercent: -50,
-          yPercent: -50,
-          x: joinedX[index],
-          y: 0,
-          rotateZ: 0,
-          scale: 1,
-          borderRadius: joinedRadius,
-          pointerEvents: "none",
-          zIndex: 20 + index,
-          force3D: true,
-        });
-        gsap.set(inners[index], {
-          rotateY: 0,
-          borderRadius: joinedRadius,
-          transformStyle: "preserve-3d",
-          force3D: true,
-        });
-        gsap.set(card.querySelectorAll(".identity-front, .identity-back"), {
-          borderRadius: joinedRadius,
-          boxShadow: "0 0 0 rgba(0,0,0,0)",
-          border: "1px solid rgba(255,255,255,0)",
-        });
-      });
+    const animate = () => {
+      if (!ctx || !canvas) return;
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < particleCount; i++) {
+        const p = particles[i];
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+        ctx.fill();
 
-      const tl = gsap.timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: {
-          trigger: section,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 0.65,
-          invalidateOnRefresh: true,
-        },
-      });
+        p.x += p.vx;
+        p.y += p.vy;
 
-      tl.to(stage, { scale: 0.84, duration: 0.08 }, 0);
+        // Wrap around edges
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+      }
+      animationId = requestAnimationFrame(animate);
+    };
 
-      tl.to(cards, {
-        x: (index) => tableX[index],
-        y: (index) => tableY[index],
-        rotateZ: (index) => tableRotateZ[index],
-        scale: 0.78,
-        borderRadius: "28px",
-        duration: 0.18,
-        stagger: 0.012,
-      }, 0.08);
+    animate();
 
-      tl.to(seams, { opacity: 0.36, duration: 0.08 }, 0.1);
-
-      tl.to(frontsAndBacks, {
-        borderRadius: "28px",
-        boxShadow: "0 32px 110px rgba(0,0,0,.62)",
-        border: "1px solid rgba(255,255,255,.14)",
-        duration: 0.16,
-      }, 0.08);
-
-      tl.to(inners, {
-        rotateY: 180,
-        duration: 0.22,
-        stagger: 0.016,
-      }, 0.28);
-
-      tl.set(cards, { pointerEvents: "auto" }, 0.54);
-      tl.to({}, { duration: 0.22 }, 0.56);
-      tl.set(cards, { pointerEvents: "none" }, 0.78);
-
-      tl.to(inners, {
-        rotateY: 360,
-        duration: 0.16,
-        stagger: 0.01,
-      }, 0.78);
-
-      tl.to(cards, {
-        x: (index) => joinedX[index],
-        y: 0,
-        rotateZ: 0,
-        scale: 1,
-        borderRadius: (index) => (index === 0 ? "32px 0 0 32px" : index === 3 ? "0 32px 32px 0" : "0px"),
-        duration: 0.12,
-      }, 0.9);
-
-      tl.to(seams, { opacity: 0, duration: 0.08 }, 0.9);
-
-      tl.to(frontsAndBacks, {
-        boxShadow: "0 0 0 rgba(0,0,0,0)",
-        border: "1px solid rgba(255,255,255,0)",
-        duration: 0.1,
-      }, 0.9);
-
-      tl.to(stage, { scale: 0.9, duration: 0.1 }, 0.9);
-
-      ScrollTrigger.refresh();
-    }, sectionRef);
-
-    return () => ctx.revert();
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(animationId);
+    };
   }, []);
 
   return (
-    <div ref={sectionRef} className="relative hidden h-[210vh] md:block">
-      <div className="sticky top-0 grid h-screen place-items-center overflow-visible">
-        <div
-          ref={stageRef}
-          className="relative h-[620px] w-[1100px] origin-center"
-          style={{ perspective: 1400, transformStyle: "preserve-3d" }}
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-45"
+    />
+  );
+}
+
+/**
+ * StickyStage: Centered viewport animation stage providing lighting, ambient glow, vignettes,
+ * and canvas dust particles representing a museum exhibit setup. Holds exit fade/scale triggers.
+ */
+function StickyStage({ scrollYProgress, children }) {
+  const stageScale = useTransform(
+    scrollYProgress,
+    [0, 0.15, 0.90, 1.00],
+    [0.96, 1.0, 1.0, 0.96],
+    { ease: [easeOutQuart, easeOutQuart, easeOutQuart] }
+  );
+  const stageOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.90, 1.00],
+    [1.0, 1.0, 0.0],
+    { ease: [easeOutQuart, easeOutQuart] }
+  );
+
+  return (
+    <motion.div
+      className="sticky top-0 grid h-screen place-items-center overflow-hidden w-full bg-[#050505]"
+      style={{ opacity: stageOpacity }}
+    >
+      {/* Museum Backdrop / Ambient Lighting */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#060608] via-[#0b0b0d] to-[#040405]" />
+
+      {/* Ambient Spotlight */}
+      <div className="pointer-events-none absolute left-1/2 top-[-10%] h-[65%] w-[75%] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(212,163,115,0.06)_0%,transparent_70%)] blur-[80px]" />
+
+      {/* Subtle Soft Glow Reflection */}
+      <div className="pointer-events-none absolute left-1/2 bottom-[-15%] h-[50%] w-[85%] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_0%,transparent_60%)] blur-[100px]" />
+
+      {/* Floating Dust Particle Field */}
+      <FloatingDust />
+
+      {/* Museum Vignette Overlay */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.85)_100%)]" />
+
+      {/* Center Stage Container */}
+      <motion.div
+        className="relative h-[min(68vh,620px)] w-[min(96vw,1100px)] origin-center"
+        style={{
+          scale: stageScale,
+          perspective: 1400,
+          transformStyle: "preserve-3d",
+        }}
+      >
+        {children}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/**
+ * SplitFlipCard: Renders one of the sliced vertical pieces of the cinematic poster.
+ * Transitions between being a seamlessly touching poster slice and an elevated, flipped card.
+ */
+function SplitFlipCard({ signal, index, progress, onOpen }) {
+  // 1. Derived scroll progress phases (0.0 to 1.0)
+  const splitProgress = useTransform(progress, [0.15, 0.35], [0, 1]);
+  const spreadProgress = useTransform(progress, [0.35, 0.55], [0, 1]);
+  
+  // Card-specific cascading flip start and end times
+  const flipStart = 0.55 + index * 0.03;
+  const flipEnd = flipStart + 0.11;
+  const cardFlipProgress = useTransform(progress, [flipStart, flipEnd], [0, 1]);
+  
+  const mergeProgress = useTransform(progress, [0.90, 1.00], [0, 1]);
+
+  // 2. Driven transforms computed from derived progress values
+  
+  // X translation (absolute position relative to stage center)
+  const x = useTransform(
+    [splitProgress, spreadProgress, mergeProgress],
+    ([split, spread, merge]) => {
+      const startX = joinedX[index];
+      const midwayX = joinedX[index] + (tableX[index] - joinedX[index]) * 0.3;
+      const targetX = startX + split * (midwayX - startX) + spread * (tableX[index] - midwayX);
+      return targetX * (1 - merge) + startX * merge;
+    }
+  );
+
+  // Y translation
+  const y = useTransform(
+    [splitProgress, spreadProgress, mergeProgress],
+    ([split, spread, merge]) => {
+      const startY = 0;
+      const midwayY = tableY[index] * 0.3;
+      const targetY = startY + split * (midwayY - startY) + spread * (tableY[index] - midwayY);
+      return targetY * (1 - merge) + startY * merge;
+    }
+  );
+
+  // Scale (animates from 1.0 to 0.78 during split & spread)
+  const scale = useTransform(
+    [splitProgress, spreadProgress, mergeProgress],
+    ([split, spread, merge]) => {
+      const startScale = 1.0;
+      const midwayScale = 0.88;
+      const targetScale = startScale + split * (midwayScale - startScale) + spread * (0.78 - midwayScale);
+      return targetScale * (1 - merge) + startScale * merge;
+    }
+  );
+
+  // Z elevation (creates physical depth)
+  const z = useTransform(
+    [splitProgress, mergeProgress],
+    ([split, merge]) => {
+      return 40 * split * (1 - merge);
+    }
+  );
+
+  // Rotate Z (subtle fan-out tilt)
+  const rotateZ = useTransform(
+    [spreadProgress, mergeProgress],
+    ([spread, merge]) => {
+      const targetTilt = tableRotateZ[index];
+      return targetTilt * spread * (1 - merge);
+    }
+  );
+
+  // Rotate Y (flip from 0 to 180, then complete to 360 during merge)
+  const rotateY = useTransform(
+    [cardFlipProgress, mergeProgress],
+    ([flip, merge]) => {
+      const flippedRotation = flip * 180;
+      const mergeRotation = merge * 180;
+      return flippedRotation + mergeRotation;
+    }
+  );
+
+  // Border radius (dynamically transitions corners)
+  const radius = useTransform(
+    [splitProgress, mergeProgress],
+    ([split, merge]) => {
+      const r1 = (index === 0) ? (32 - split * 8) : (split * 24);
+      const r2 = (index === 3) ? (32 - split * 8) : (split * 24);
+      const r3 = (index === 3) ? (32 - split * 8) : (split * 24);
+      const r4 = (index === 0) ? (32 - split * 8) : (split * 24);
+      
+      const m1 = r1 * (1 - merge) + ((index === 0) ? merge * 32 : 0);
+      const m2 = r2 * (1 - merge) + ((index === 3) ? merge * 32 : 0);
+      const m3 = r3 * (1 - merge) + ((index === 3) ? merge * 32 : 0);
+      const m4 = r4 * (1 - merge) + ((index === 0) ? merge * 32 : 0);
+      
+      return `${m1}px ${m2}px ${m3}px ${m4}px`;
+    }
+  );
+
+  // Border Outline Opacity
+  const border = useTransform(
+    [splitProgress, mergeProgress],
+    ([split, merge]) => {
+      const opacity = split * 0.12 * (1 - merge);
+      return `1px solid rgba(255, 255, 255, ${opacity})`;
+    }
+  );
+
+  // Drop Shadow Blur and Opacity
+  const shadow = useTransform(
+    [splitProgress, mergeProgress],
+    ([split, merge]) => {
+      const shadowOpacity = split * 0.65 * (1 - merge);
+      const blur = split * 80 * (1 - merge);
+      const yOffset = split * 24 * (1 - merge);
+      return `0 ${yOffset}px ${blur}px rgba(0, 0, 0, ${shadowOpacity})`;
+    }
+  );
+
+  // Pointer Events (Active only during the Hold/Explore phase: 75% to 90%)
+  const pointerEvents = useTransform(
+    progress,
+    (val) => (val >= 0.75 && val <= 0.90 ? "auto" : "none")
+  );
+
+  return (
+    <motion.div
+      className="absolute border-0 bg-transparent p-0 text-left outline-none"
+      style={{
+        left: "50%",
+        top: "50%",
+        width: PANEL_WIDTH,
+        height: POSTER_HEIGHT,
+        marginLeft: -PANEL_WIDTH / 2,
+        marginTop: -POSTER_HEIGHT / 2,
+        x,
+        y,
+        z,
+        scale,
+        rotateZ,
+        pointerEvents,
+        perspective: 1400,
+        transformStyle: "preserve-3d",
+      }}
+    >
+      {/* Hover & Modal Activation Button wrapper */}
+      <motion.button
+        type="button"
+        onClick={onOpen}
+        className="w-full h-full text-left outline-none border-0 bg-transparent p-0 relative block cursor-pointer group"
+        whileHover={{
+          scale: 1.03,
+          y: -10,
+          transition: { duration: 0.28, ease: easeOutQuart },
+        }}
+        style={{
+          transformStyle: "preserve-3d",
+          borderRadius: radius,
+        }}
+      >
+        {/* Flip rotation wrapper */}
+        <motion.div
+          className="relative h-full w-full"
+          style={{
+            rotateY,
+            transformStyle: "preserve-3d",
+            borderRadius: radius,
+          }}
         >
-          <div className="pointer-events-none absolute inset-0 -z-10 rounded-[42px] bg-white/[0.045] blur-[90px]" />
-          {identitySignals.map((signal, index) => (
-            <SplitFlipCard
-              key={signal.title}
-              signal={signal}
-              index={index}
-              onOpen={() => onOpen(index)}
-              setCardRef={setCardRef}
-              setInnerRef={setInnerRef}
+          {/* Front Face: Poster Slice (0-15% is Poster Pause, touching seamlessly) */}
+          <motion.div
+            className="absolute inset-0 overflow-hidden bg-[#070707] [backface-visibility:hidden]"
+            style={{
+              borderRadius: radius,
+              boxShadow: shadow,
+              border,
+              backgroundImage: `url(${posterAsset})`,
+              backgroundSize: `${POSTER_WIDTH}px ${POSTER_HEIGHT}px`,
+              backgroundPosition: `-${index * PANEL_WIDTH}px 0px`,
+              backgroundRepeat: "no-repeat",
+            }}
+          >
+            {/* Subtle reflection overlay */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.01] to-white/[0.05] pointer-events-none rounded-[inherit]" />
+          </motion.div>
+
+          {/* Back Face: Content Card (Revealed after cascading Flip phase) */}
+          <motion.div
+            className="absolute inset-0 flex flex-col overflow-hidden bg-zinc-950/85 text-white backdrop-blur-3xl [backface-visibility:hidden] [transform:rotateY(180deg)]"
+            style={{
+              borderRadius: radius,
+              boxShadow: shadow,
+              border,
+            }}
+          >
+            {/* Ambient inner card vignette */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,rgba(0,0,0,0.4)_100%)] pointer-events-none" />
+
+            {/* Shiny card reflection sheen (triggers on hover during Hold/Explore) */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none z-10"
+              initial={{ x: "-100%" }}
+              whileHover={{ x: "100%" }}
+              transition={{ duration: 0.85, ease: "easeInOut" }}
             />
-          ))}
-        </div>
-      </div>
+
+            <div className="h-[64%] border-b border-white/10 overflow-hidden relative">
+              <ImageFrame {...signal} title={signal.title} />
+            </div>
+
+            <div className="flex flex-1 flex-col justify-between p-4 sm:p-5 relative z-10">
+              <div className="flex items-center justify-between gap-4">
+                <span className="font-mono text-[10px] font-black uppercase tracking-[0.26em] text-white/35">
+                  {signal.number}
+                </span>
+                <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 font-mono text-[8px] font-black uppercase tracking-[0.16em] text-white/40 group-hover:text-white group-hover:bg-white/10 transition-colors">
+                  Open
+                </span>
+              </div>
+              <div>
+                <h3 className="font-syne text-[clamp(1.1rem,1.6vw,1.8rem)] font-black uppercase leading-none tracking-[-0.08em] text-white">
+                  {signal.title}
+                </h3>
+                <p className="mt-2 text-xs font-bold leading-tight tracking-[-0.03em] text-white/80 line-clamp-2">
+                  {signal.line}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      </motion.button>
+    </motion.div>
+  );
+}
+
+/**
+ * FourCards: Container component holding and laying out the 4 vertical poster slices/cards.
+ */
+function FourCards({ scrollYProgress, onOpen }) {
+  return (
+    <div
+      className="absolute inset-0"
+      style={{ transformStyle: "preserve-3d" }}
+    >
+      {identitySignals.map((signal, index) => (
+        <SplitFlipCard
+          key={signal.title}
+          signal={signal}
+          index={index}
+          progress={scrollYProgress}
+          onOpen={() => onOpen(index)}
+        />
+      ))}
     </div>
   );
 }
@@ -380,11 +539,21 @@ function MobileIdentityFallback({ onOpen }) {
         </div>
         <div className="mt-6 grid gap-4">
           {identitySignals.map((signal, index) => (
-            <button key={signal.title} onClick={() => onOpen(index)} className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.05] text-left">
-              <div className="h-44"><ImageFrame {...signal} title={signal.title} /></div>
+            <button
+              key={signal.title}
+              onClick={() => onOpen(index)}
+              className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.05] text-left"
+            >
+              <div className="h-44">
+                <ImageFrame {...signal} title={signal.title} />
+              </div>
               <div className="p-5">
-                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/35">{signal.number}</p>
-                <h3 className="mt-3 font-syne text-2xl font-black uppercase tracking-[-0.06em]">{signal.title}</h3>
+                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/35">
+                  {signal.number}
+                </p>
+                <h3 className="mt-3 font-syne text-2xl font-black uppercase tracking-[-0.06em]">
+                  {signal.title}
+                </h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/65">{signal.line}</p>
               </div>
             </button>
@@ -397,13 +566,30 @@ function MobileIdentityFallback({ onOpen }) {
 
 export default function IdentityStack() {
   const [activeSignal, setActiveSignal] = useState(null);
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
 
   return (
-    <section id="identity" className="relative overflow-x-clip bg-[#070707] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_36%,rgba(255,255,255,.07),transparent_34%),linear-gradient(180deg,#070707,#050505)]" />
-      <DesktopIdentityArtifact onOpen={setActiveSignal} />
+    <section
+      ref={containerRef}
+      id="identity"
+      className="relative h-auto md:h-[180vh] bg-[#050505] text-white overflow-visible"
+    >
+      <StickyStage scrollYProgress={scrollYProgress}>
+        <FourCards scrollYProgress={scrollYProgress} onOpen={setActiveSignal} />
+      </StickyStage>
       <MobileIdentityFallback onOpen={setActiveSignal} />
-      <AnimatePresence>{activeSignal !== null && <SignalModal signal={identitySignals[activeSignal]} onClose={() => setActiveSignal(null)} />}</AnimatePresence>
+      <AnimatePresence>
+        {activeSignal !== null && (
+          <SignalModal
+            signal={identitySignals[activeSignal]}
+            onClose={() => setActiveSignal(null)}
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 }
