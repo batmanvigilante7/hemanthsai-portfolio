@@ -64,9 +64,9 @@ const POSTER_HEIGHT = 620;
 const PANEL_WIDTH = POSTER_WIDTH / 4;
 
 const joinedX = [-412.5, -137.5, 137.5, 412.5];
-const tableX = [-420, -140, 140, 420];
-const tableY = [18, -26, -26, 18];
-const tableRotateZ = [-6, -2, 2, 6];
+const tableX = [-430, -145, 145, 430];
+const tableY = [0, -18, -18, 0];
+const tableRotateZ = [-5.5, -1.5, 1.5, 5.5];
 
 function ImageFrame({ src, alt, title, objectPosition }) {
   return (
@@ -235,12 +235,15 @@ function DesktopIdentityArtifact({ onOpen }) {
     if (!section || !stage || cards.length !== 4 || inners.length !== 4) return;
 
     const ctx = gsap.context(() => {
-      ScrollTrigger.refresh();
+      const frontsAndBacks = cards.flatMap((card) => Array.from(card.querySelectorAll(".identity-front, .identity-back")));
+      const seams = cards.map((card) => card.querySelector(".identity-seam")).filter(Boolean);
 
       gsap.set(stage, {
-        scale: 0.86,
+        scale: 0.9,
+        y: 0,
         transformPerspective: 1400,
         transformStyle: "preserve-3d",
+        transformOrigin: "50% 50%",
       });
 
       cards.forEach((card, index) => {
@@ -275,53 +278,48 @@ function DesktopIdentityArtifact({ onOpen }) {
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: "+=2600",
-          scrub: 0.9,
-          pin: true,
-          anticipatePin: 1,
+          end: "bottom bottom",
+          scrub: 0.65,
           invalidateOnRefresh: true,
         },
       });
 
-      tl.to(stage, { scale: 0.82, duration: 0.18 }, 0);
+      tl.to(stage, { scale: 0.84, duration: 0.08 }, 0);
 
       tl.to(cards, {
         x: (index) => tableX[index],
         y: (index) => tableY[index],
         rotateZ: (index) => tableRotateZ[index],
-        scale: 0.82,
+        scale: 0.78,
         borderRadius: "28px",
-        duration: 0.24,
-        stagger: 0.015,
-      }, 0.18);
+        duration: 0.18,
+        stagger: 0.012,
+      }, 0.08);
 
-      tl.to(cards.map((card) => card.querySelector(".identity-seam")).filter(Boolean), {
-        opacity: 0.35,
-        duration: 0.12,
-      }, 0.2);
+      tl.to(seams, { opacity: 0.36, duration: 0.08 }, 0.1);
 
-      tl.to(cards.map((card) => card.querySelectorAll(".identity-front, .identity-back")), {
+      tl.to(frontsAndBacks, {
         borderRadius: "28px",
         boxShadow: "0 32px 110px rgba(0,0,0,.62)",
         border: "1px solid rgba(255,255,255,.14)",
-        duration: 0.24,
-      }, 0.18);
+        duration: 0.16,
+      }, 0.08);
 
       tl.to(inners, {
         rotateY: 180,
-        duration: 0.26,
-        stagger: 0.018,
-      }, 0.43);
+        duration: 0.22,
+        stagger: 0.016,
+      }, 0.28);
 
-      tl.set(cards, { pointerEvents: "auto" }, 0.66);
-      tl.to({}, { duration: 0.22 }, 0.68);
-      tl.set(cards, { pointerEvents: "none" }, 0.86);
+      tl.set(cards, { pointerEvents: "auto" }, 0.54);
+      tl.to({}, { duration: 0.22 }, 0.56);
+      tl.set(cards, { pointerEvents: "none" }, 0.78);
 
       tl.to(inners, {
         rotateY: 360,
-        duration: 0.20,
-        stagger: 0.012,
-      }, 0.84);
+        duration: 0.16,
+        stagger: 0.01,
+      }, 0.78);
 
       tl.to(cards, {
         x: (index) => joinedX[index],
@@ -329,29 +327,28 @@ function DesktopIdentityArtifact({ onOpen }) {
         rotateZ: 0,
         scale: 1,
         borderRadius: (index) => (index === 0 ? "32px 0 0 32px" : index === 3 ? "0 32px 32px 0" : "0px"),
-        duration: 0.14,
-      }, 0.94);
+        duration: 0.12,
+      }, 0.9);
 
-      tl.to(cards.map((card) => card.querySelector(".identity-seam")).filter(Boolean), {
-        opacity: 0,
-        duration: 0.08,
-      }, 0.94);
+      tl.to(seams, { opacity: 0, duration: 0.08 }, 0.9);
 
-      tl.to(cards.map((card) => card.querySelectorAll(".identity-front, .identity-back")), {
+      tl.to(frontsAndBacks, {
         boxShadow: "0 0 0 rgba(0,0,0,0)",
         border: "1px solid rgba(255,255,255,0)",
-        duration: 0.12,
-      }, 0.94);
+        duration: 0.1,
+      }, 0.9);
 
-      tl.to(stage, { scale: 0.86, duration: 0.10 }, 0.94);
+      tl.to(stage, { scale: 0.9, duration: 0.1 }, 0.9);
+
+      ScrollTrigger.refresh();
     }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <div ref={sectionRef} className="relative hidden min-h-screen md:block">
-      <div className="grid h-screen place-items-center overflow-visible">
+    <div ref={sectionRef} className="relative hidden h-[210vh] md:block">
+      <div className="sticky top-0 grid h-screen place-items-center overflow-visible">
         <div
           ref={stageRef}
           className="relative h-[620px] w-[1100px] origin-center"
