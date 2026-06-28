@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { AnimatePresence, motion, useScroll, useTransform, cubicBezier } from "framer-motion";
+import { AnimatePresence, motion, useScroll, useTransform, cubicBezier, useMotionValueEvent } from "framer-motion";
 
 const asset = (fileName) => `${import.meta.env.BASE_URL}assets/${fileName}`;
 const posterAsset = asset("identity-cinematic-poster.webp");
@@ -228,6 +228,8 @@ function FloatingDust() {
  * and canvas dust particles representing a museum exhibit setup. Holds exit fade/scale triggers.
  */
 function StickyStage({ scrollYProgress, children }) {
+  const stageRef = useRef(null);
+
   const stageScale = useTransform(
     scrollYProgress,
     [0, 0.15, 0.90, 1.00],
@@ -240,6 +242,22 @@ function StickyStage({ scrollYProgress, children }) {
     [1.0, 1.0, 0.0],
     { ease: [easeOutQuart, easeOutQuart] }
   );
+
+  // Diagnostic Loggers
+  useMotionValueEvent(stageScale, "change", (val) => {
+    console.log("[Diagnostic - Stage] scale:", val.toFixed(3));
+  });
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (stageRef.current) {
+        const rect = stageRef.current.getBoundingClientRect();
+        console.log("[Diagnostic - Stage Position] rect.top relative to viewport:", rect.top.toFixed(1) + "px");
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <motion.div
@@ -261,13 +279,22 @@ function StickyStage({ scrollYProgress, children }) {
       {/* Museum Vignette Overlay */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.85)_100%)]" />
 
-      {/* Center Stage Container */}
+      {/* Center Stage Container with Absolute Centering Crosshairs and Lime outline */}
       <motion.div
-        className="relative h-[min(68vh,620px)] w-[min(96vw,1100px)] origin-center"
+        ref={stageRef}
+        className="origin-center"
         style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          x: "-50%",
+          y: "-50%",
+          height: "min(68vh,620px)",
+          width: "min(96vw,1100px)",
           scale: stageScale,
           perspective: 1400,
           transformStyle: "preserve-3d",
+          outline: "2px solid lime", // Temporary Lime Outline to draw bounds
         }}
       >
         {children}
@@ -397,6 +424,16 @@ function SplitFlipCard({ signal, index, progress, onOpen }) {
     progress,
     (val) => (val >= 0.75 && val <= 0.90 ? "auto" : "none")
   );
+
+  // Diagnostic Loggers for Card 0
+  if (index === 0) {
+    useMotionValueEvent(x, "change", (val) => {
+      console.log(`[Diagnostic - Card 0] x: ${val.toFixed(1)}px`);
+    });
+    useMotionValueEvent(y, "change", (val) => {
+      console.log(`[Diagnostic - Card 0] y: ${val.toFixed(1)}px`);
+    });
+  }
 
   return (
     <motion.div
@@ -572,12 +609,43 @@ export default function IdentityStack() {
     offset: ["start start", "end end"],
   });
 
+  // Diagnostic Loggers for Scroll
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    console.log("[Diagnostic - Scroll Progress] scrollYProgress:", latest.toFixed(3));
+  });
+
   return (
     <section
       ref={containerRef}
       id="identity"
       className="relative h-auto md:h-[180vh] bg-[#050505] text-white overflow-visible"
     >
+      {/* Debug Viewport Crosshair Indicators */}
+      <div 
+        style={{
+          position: "fixed",
+          left: "50%",
+          top: 0,
+          width: "2px",
+          height: "100%",
+          background: "cyan",
+          zIndex: 999999,
+          pointerEvents: "none",
+        }}
+      />
+      <div 
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: 0,
+          width: "100%",
+          height: "2px",
+          background: "red",
+          zIndex: 999999,
+          pointerEvents: "none",
+        }}
+      />
+
       <StickyStage scrollYProgress={scrollYProgress}>
         <FourCards scrollYProgress={scrollYProgress} onOpen={setActiveSignal} />
       </StickyStage>
