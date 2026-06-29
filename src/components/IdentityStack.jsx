@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect } from "react";
-import { AnimatePresence, motion, useScroll, useTransform, cubicBezier } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 
 const asset = (fileName) => `${import.meta.env.BASE_URL}assets/${fileName}`;
 const posterAsset = asset("identity-cinematic-poster.webp");
@@ -60,16 +60,14 @@ const POSTER_HEIGHT = 620;
 const PANEL_WIDTH = POSTER_WIDTH / 4;
 
 const joinedX = [-412.5, -137.5, 137.5, 412.5];
-const tableX = [-220, -74, 74, 220];
-const tableY = [0, -18, -18, 0];
-const tableRotateZ = [-5.5, -1.5, 1.5, 5.5];
+const sliceX = [-475, -160, 160, 475];
 
-// Easing Curve Creators
-const easeOutQuart = cubicBezier(0.25, 1, 0.5, 1);
-
-// ==========================================
-// SUBCOMPONENTS
-// ==========================================
+const cardPositions = [
+  { x: -205, y: -125, r: -3 },
+  { x: 205, y: -125, r: 3 },
+  { x: -205, y: 125, r: 2.5 },
+  { x: 205, y: 125, r: -2.5 },
+];
 
 function ImageFrame({ src, alt, title, objectPosition }) {
   return (
@@ -78,9 +76,9 @@ function ImageFrame({ src, alt, title, objectPosition }) {
         src={src}
         alt={alt}
         style={{ objectPosition }}
-        className="h-full w-full object-cover brightness-100 contrast-105 saturate-[0.92]"
+        className="h-full w-full object-cover brightness-100 contrast-105 saturate-[0.92] transition-transform duration-700 group-hover:scale-[1.04]"
       />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-black/10" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/10" />
       <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_70px_rgba(0,0,0,0.48)]" />
       <span className="absolute bottom-3 left-3 rounded-full border border-white/10 bg-black/35 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/65 backdrop-blur-md">
         {title}
@@ -90,6 +88,20 @@ function ImageFrame({ src, alt, title, objectPosition }) {
 }
 
 function SignalModal({ signal, onClose }) {
+  useEffect(() => {
+    const closeOnKey = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", closeOnKey);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      window.removeEventListener("keydown", closeOnKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
   return (
     <motion.div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 px-4 py-6 backdrop-blur-2xl"
@@ -111,6 +123,7 @@ function SignalModal({ signal, onClose }) {
         </div>
         <div className="relative flex flex-col justify-center p-7 sm:p-10">
           <button
+            type="button"
             onClick={onClose}
             className="absolute right-5 top-5 grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.06] text-xl text-white/70 transition hover:bg-white/15 hover:text-white"
             aria-label="Close identity signal"
@@ -131,7 +144,9 @@ function SignalModal({ signal, onClose }) {
           </p>
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
-              <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/35">Origin</p>
+              <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/35">
+                Origin
+              </p>
               <p className="mt-2 text-sm font-bold uppercase tracking-[0.1em] text-white/85">
                 {signal.origin}
               </p>
@@ -156,124 +171,82 @@ function FloatingDust() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return undefined;
+
     const ctx = canvas.getContext("2d");
     let animationId;
 
-    let width = (canvas.width = canvas.parentElement.offsetWidth || window.innerWidth);
-    let height = (canvas.height = canvas.parentElement.offsetHeight || window.innerHeight);
-
-    const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = canvas.parentElement.offsetWidth || window.innerWidth;
-      height = canvas.height = canvas.parentElement.offsetHeight || window.innerHeight;
+    const resize = () => {
+      const parent = canvas.parentElement;
+      canvas.width = parent?.offsetWidth || window.innerWidth;
+      canvas.height = parent?.offsetHeight || window.innerHeight;
     };
 
-    window.addEventListener("resize", handleResize);
+    resize();
+    window.addEventListener("resize", resize);
 
-    const particleCount = 35;
-    const particles = [];
-
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        radius: Math.random() * 1.3 + 0.3,
-        vx: (Math.random() - 0.5) * 0.1,
-        vy: (Math.random() - 0.5) * 0.1 - 0.04, // Slow upward drift
-        opacity: Math.random() * 0.3 + 0.05,
-      });
-    }
+    const particles = Array.from({ length: 34 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 1.3 + 0.25,
+      vx: (Math.random() - 0.5) * 0.12,
+      vy: (Math.random() - 0.5) * 0.1 - 0.03,
+      opacity: Math.random() * 0.26 + 0.04,
+    }));
 
     const animate = () => {
-      if (!ctx || !canvas) return;
-      ctx.clearRect(0, 0, width, height);
-      for (let i = 0; i < particleCount; i++) {
-        const p = particles[i];
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (const particle of particles) {
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${particle.opacity})`;
         ctx.fill();
 
-        p.x += p.vx;
-        p.y += p.vy;
+        particle.x += particle.vx;
+        particle.y += particle.vy;
 
-        // Wrap around edges
-        if (p.x < 0) p.x = width;
-        if (p.x > width) p.x = 0;
-        if (p.y < 0) p.y = height;
-        if (p.y > height) p.y = 0;
+        if (particle.x < 0) particle.x = canvas.width;
+        if (particle.x > canvas.width) particle.x = 0;
+        if (particle.y < 0) particle.y = canvas.height;
+        if (particle.y > canvas.height) particle.y = 0;
       }
+
       animationId = requestAnimationFrame(animate);
     };
 
     animate();
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("resize", resize);
       cancelAnimationFrame(animationId);
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-45"
-    />
-  );
+  return <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-40" />;
 }
 
-/**
- * StickyStage: Centered viewport animation stage providing lighting, ambient glow, vignettes,
- * and canvas dust particles representing a museum exhibit setup. Holds exit fade/scale triggers.
- */
 function StickyStage({ scrollYProgress, children }) {
-  // Animating the entire stage scale to have lots of breathing room initially (0.70)
-  // and zoom in slightly to 0.78 during split and spread, then zoom out back to 0.70.
   const stageScale = useTransform(
     scrollYProgress,
-    [0, 0.15, 0.35, 0.55, 0.90, 1.00],
-    [0.70, 0.70, 0.74, 0.78, 0.78, 0.70],
-    { ease: [easeOutQuart, easeOutQuart, easeOutQuart, easeOutQuart, easeOutQuart] }
-  );
-  const stageOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.90, 1.00],
-    [1.0, 1.0, 0.0],
-    { ease: [easeOutQuart, easeOutQuart] }
+    [0, 0.16, 0.78, 0.92, 1],
+    [0.78, 0.78, 0.82, 0.78, 0.78]
   );
 
   return (
-    <motion.div
-      className="sticky top-0 grid h-screen place-items-center overflow-hidden w-full bg-[#050505]"
-      style={{ opacity: stageOpacity }}
-    >
-      {/* Museum Backdrop / Ambient Lighting */}
+    <div className="sticky top-0 grid h-screen w-full place-items-center overflow-hidden bg-[#050505]">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#060608] via-[#0b0b0d] to-[#040405]" />
-
-      {/* Ambient Spotlight */}
-      <div className="pointer-events-none absolute left-1/2 top-[-10%] h-[65%] w-[75%] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(212,163,115,0.06)_0%,transparent_70%)] blur-[80px]" />
-
-      {/* Subtle Soft Glow Reflection */}
-      <div className="pointer-events-none absolute left-1/2 bottom-[-15%] h-[50%] w-[85%] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_0%,transparent_60%)] blur-[100px]" />
-
-      {/* Floating Dust Particle Field */}
+      <div className="pointer-events-none absolute left-1/2 top-[-10%] h-[65%] w-[75%] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(212,163,115,0.065)_0%,transparent_70%)] blur-[90px]" />
+      <div className="pointer-events-none absolute left-1/2 bottom-[-15%] h-[50%] w-[85%] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.025)_0%,transparent_60%)] blur-[100px]" />
       <FloatingDust />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_38%,rgba(0,0,0,0.86)_100%)]" />
 
-      {/* Museum Vignette Overlay */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.85)_100%)]" />
-
-      {/* Center Stage Container */}
       <motion.div
-        className="origin-center"
+        className="absolute left-1/2 top-1/2 h-[620px] w-[1100px] origin-center"
         style={{
-          position: "absolute",
-          left: "50%",
-          top: "50%",
           x: "-50%",
           y: "-50%",
-          height: "min(68vh,620px)",
-          width: "min(96vw,1100px)",
           scale: stageScale,
           perspective: 1400,
           transformStyle: "preserve-3d",
@@ -281,254 +254,145 @@ function StickyStage({ scrollYProgress, children }) {
       >
         {children}
       </motion.div>
+    </div>
+  );
+}
+
+function PosterSlicePiece({ index, progress }) {
+  const opacity = useTransform(progress, [0, 0.22, 0.34, 0.76, 0.9, 1], [1, 1, 0, 0, 1, 1]);
+  const x = useTransform(progress, [0, 0.1, 0.26, 0.76, 0.9, 1], [joinedX[index], joinedX[index], sliceX[index], sliceX[index], joinedX[index], joinedX[index]]);
+  const rotateZ = useTransform(progress, [0, 0.1, 0.26, 0.76, 0.9, 1], [0, 0, index < 2 ? -1.5 : 1.5, index < 2 ? -1.5 : 1.5, 0, 0]);
+  const radius = index === 0 ? "32px 0 0 32px" : index === 3 ? "0 32px 32px 0" : "0";
+
+  return (
+    <motion.div
+      className="absolute left-1/2 top-1/2 overflow-hidden bg-[#070707]"
+      style={{
+        width: PANEL_WIDTH,
+        height: POSTER_HEIGHT,
+        x,
+        y: 0,
+        opacity,
+        rotateZ,
+        translateX: "-50%",
+        translateY: "-50%",
+        borderRadius: radius,
+        backgroundImage: `url(${posterAsset})`,
+        backgroundSize: `${POSTER_WIDTH}px ${POSTER_HEIGHT}px`,
+        backgroundPosition: `-${index * PANEL_WIDTH}px 0px`,
+        backgroundRepeat: "no-repeat",
+        pointerEvents: "none",
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20" />
     </motion.div>
   );
 }
 
-/**
- * SplitFlipCard: Renders one of the sliced vertical pieces of the cinematic poster.
- * Transitions between being a seamlessly touching poster slice and an elevated, flipped card.
- */
-function SplitFlipCard({ signal, index, progress, onOpen }) {
-  // 1. Derived scroll progress phases (0.0 to 1.0)
-  const splitProgress = useTransform(progress, [0.15, 0.35], [0, 1]);
-  const spreadProgress = useTransform(progress, [0.35, 0.55], [0, 1]);
-  
-  // Card-specific cascading flip start and end times
-  const flipStart = 0.55 + index * 0.03;
-  const flipEnd = flipStart + 0.11;
-  const cardFlipProgress = useTransform(progress, [flipStart, flipEnd], [0, 1]);
-  
-  const mergeProgress = useTransform(progress, [0.90, 1.00], [0, 1]);
+function RealIdentityCard({ signal, index, progress, onOpen }) {
+  const pos = cardPositions[index];
 
-  // 2. Driven transforms computed from derived progress values
-  
-  // X translation (absolute position relative to stage center)
-  const x = useTransform(
-    [splitProgress, spreadProgress, mergeProgress],
-    ([split, spread, merge]) => {
-      const startX = joinedX[index];
-      const midwayX = joinedX[index] + (tableX[index] - joinedX[index]) * 0.3;
-      const targetX = startX + split * (midwayX - startX) + spread * (tableX[index] - midwayX);
-      return targetX * (1 - merge) + startX * merge;
-    }
-  );
+  const opacity = useTransform(progress, [0, 0.28, 0.4, 0.75, 0.88, 1], [0, 0, 1, 1, 0, 0]);
+  const x = useTransform(progress, [0, 0.28, 0.42, 0.75, 0.88, 1], [joinedX[index] * 0.28, joinedX[index] * 0.28, pos.x, pos.x, joinedX[index] * 0.28, joinedX[index] * 0.28]);
+  const y = useTransform(progress, [0, 0.28, 0.42, 0.75, 0.88, 1], [0, 0, pos.y, pos.y, 0, 0]);
+  const scale = useTransform(progress, [0, 0.28, 0.42, 0.75, 0.88, 1], [0.7, 0.7, 1, 1, 0.7, 0.7]);
+  const rotateZ = useTransform(progress, [0, 0.28, 0.42, 0.75, 0.88, 1], [0, 0, pos.r, pos.r, 0, 0]);
+  const rotateY = useTransform(progress, [0, 0.32, 0.48, 0.75, 0.88, 1], [70, 70, 0, 0, 70, 70]);
+  const z = useTransform(progress, [0, 0.28, 0.42, 0.75, 0.88, 1], [0, 0, 55, 55, 0, 0]);
+  const pointerEvents = useTransform(progress, (value) => (value > 0.48 && value < 0.75 ? "auto" : "none"));
 
-  // Y translation
-  const y = useTransform(
-    [splitProgress, spreadProgress, mergeProgress],
-    ([split, spread, merge]) => {
-      const startY = 0;
-      const midwayY = tableY[index] * 0.3;
-      const targetY = startY + split * (midwayY - startY) + spread * (tableY[index] - midwayY);
-      return targetY * (1 - merge) + startY * merge;
-    }
-  );
-
-  // Scale (animates from 1.0 to 0.78 during split & spread)
-  const scale = useTransform(
-    [splitProgress, spreadProgress, mergeProgress],
-    ([split, spread, merge]) => {
-      const startScale = 1.0;
-      const midwayScale = 0.88;
-      const targetScale = startScale + split * (midwayScale - startScale) + spread * (0.78 - midwayScale);
-      return targetScale * (1 - merge) + startScale * merge;
-    }
-  );
-
-  // Z elevation (creates physical depth)
-  const z = useTransform(
-    [splitProgress, mergeProgress],
-    ([split, merge]) => {
-      return 40 * split * (1 - merge);
-    }
-  );
-
-  // Rotate Z (subtle fan-out tilt)
-  const rotateZ = useTransform(
-    [spreadProgress, mergeProgress],
-    ([spread, merge]) => {
-      const targetTilt = tableRotateZ[index];
-      return targetTilt * spread * (1 - merge);
-    }
-  );
-
-  // Rotate Y (flip from 0 to 180, then complete to 360 during merge)
-  const rotateY = useTransform(
-    [cardFlipProgress, mergeProgress],
-    ([flip, merge]) => {
-      const flippedRotation = flip * 180;
-      const mergeRotation = merge * 180;
-      return flippedRotation + mergeRotation;
-    }
-  );
-
-  // Border radius (dynamically transitions corners)
-  const radius = useTransform(
-    [splitProgress, mergeProgress],
-    ([split, merge]) => {
-      const r1 = (index === 0) ? (32 - split * 8) : (split * 24);
-      const r2 = (index === 3) ? (32 - split * 8) : (split * 24);
-      const r3 = (index === 3) ? (32 - split * 8) : (split * 24);
-      const r4 = (index === 0) ? (32 - split * 8) : (split * 24);
-      
-      const m1 = r1 * (1 - merge) + ((index === 0) ? merge * 32 : 0);
-      const m2 = r2 * (1 - merge) + ((index === 3) ? merge * 32 : 0);
-      const m3 = r3 * (1 - merge) + ((index === 3) ? merge * 32 : 0);
-      const m4 = r4 * (1 - merge) + ((index === 0) ? merge * 32 : 0);
-      
-      return `${m1}px ${m2}px ${m3}px ${m4}px`;
-    }
-  );
-
-  // Border Outline Opacity
-  const border = useTransform(
-    [splitProgress, mergeProgress],
-    ([split, merge]) => {
-      const opacity = split * 0.12 * (1 - merge);
-      return `1px solid rgba(255, 255, 255, ${opacity})`;
-    }
-  );
-
-  // Drop Shadow Blur and Opacity
   const shadow = useTransform(
-    [splitProgress, mergeProgress],
-    ([split, merge]) => {
-      const shadowOpacity = split * 0.65 * (1 - merge);
-      const blur = split * 80 * (1 - merge);
-      const yOffset = split * 24 * (1 - merge);
-      return `0 ${yOffset}px ${blur}px rgba(0, 0, 0, ${shadowOpacity})`;
-    }
-  );
-
-  // Pointer Events (Active only during the Hold/Explore phase: 75% to 90%)
-  const pointerEvents = useTransform(
     progress,
-    (val) => (val >= 0.75 && val <= 0.90 ? "auto" : "none")
+    [0, 0.3, 0.45, 0.75, 0.88, 1],
+    [
+      "0px 0px 0px rgba(0,0,0,0)",
+      "0px 0px 0px rgba(0,0,0,0)",
+      "0px 26px 80px rgba(0,0,0,0.68)",
+      "0px 26px 80px rgba(0,0,0,0.68)",
+      "0px 0px 0px rgba(0,0,0,0)",
+      "0px 0px 0px rgba(0,0,0,0)",
+    ]
   );
 
   return (
     <motion.div
-      className="absolute border-0 bg-transparent p-0 text-left outline-none"
+      className="absolute left-1/2 top-1/2"
       style={{
-        left: "50%",
-        top: "50%",
-        width: PANEL_WIDTH,
-        height: POSTER_HEIGHT,
-        marginLeft: -PANEL_WIDTH / 2,
-        marginTop: -POSTER_HEIGHT / 2,
+        width: 340,
+        height: 210,
         x,
         y,
         z,
         scale,
         rotateZ,
-        pointerEvents,
-        perspective: 1400,
+        rotateY,
+        opacity,
+        translateX: "-50%",
+        translateY: "-50%",
         transformStyle: "preserve-3d",
+        pointerEvents,
       }}
     >
-      {/* Hover & Modal Activation Button wrapper */}
       <motion.button
         type="button"
         onClick={onOpen}
-        className="w-full h-full text-left outline-none border-0 bg-transparent p-0 relative block cursor-pointer group"
+        className="group relative flex h-full w-full cursor-pointer items-center gap-4 overflow-hidden rounded-[24px] border border-white/[0.10] bg-zinc-950/80 p-4 text-left text-white outline-none backdrop-blur-2xl"
         whileHover={{
-          scale: 1.03,
-          y: -10,
-          transition: { duration: 0.28, ease: easeOutQuart },
+          scale: 1.035,
+          y: -8,
+          borderColor: "rgba(255,255,255,0.18)",
+          transition: { duration: 0.24, ease: [0.25, 1, 0.5, 1] },
         }}
-        style={{
-          transformStyle: "preserve-3d",
-          borderRadius: radius,
-        }}
+        style={{ boxShadow: shadow }}
       >
-        {/* Flip rotation wrapper */}
-        <motion.div
-          className="relative h-full w-full"
-          style={{
-            rotateY,
-            transformStyle: "preserve-3d",
-            borderRadius: radius,
-          }}
-        >
-          {/* Front Face: Poster Slice (0-15% is Poster Pause, touching seamlessly) */}
-          <motion.div
-            className="absolute inset-0 overflow-hidden bg-[#070707] [backface-visibility:hidden]"
-            style={{
-              borderRadius: radius,
-              boxShadow: shadow,
-              border,
-              backgroundImage: `url(${posterAsset})`,
-              backgroundSize: `${POSTER_WIDTH}px ${POSTER_HEIGHT}px`,
-              backgroundPosition: `-${index * PANEL_WIDTH}px 0px`,
-              backgroundRepeat: "no-repeat",
-            }}
-          >
-            {/* Subtle reflection overlay */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.01] to-white/[0.05] pointer-events-none rounded-[inherit]" />
-          </motion.div>
+        <div className="relative h-[172px] w-[108px] flex-shrink-0 overflow-hidden rounded-[16px] border border-white/5 bg-zinc-900">
+          <img
+            src={signal.image}
+            alt={signal.alt}
+            style={{ objectPosition: signal.objectPosition }}
+            className="h-full w-full object-cover brightness-95 saturate-[0.9] transition-all duration-500 group-hover:scale-105 group-hover:brightness-105"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+        </div>
 
-          {/* Back Face: Content Card (Revealed after cascading Flip phase) */}
-          <motion.div
-            className="absolute inset-0 flex flex-col overflow-hidden bg-zinc-950/85 text-white backdrop-blur-3xl [backface-visibility:hidden] [transform:rotateY(180deg)]"
-            style={{
-              borderRadius: radius,
-              boxShadow: shadow,
-              border,
-            }}
-          >
-            {/* Ambient inner card vignette */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,rgba(0,0,0,0.4)_100%)] pointer-events-none" />
+        <div className="pointer-events-none flex h-[172px] flex-1 flex-col justify-between">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="font-syne text-[20px] font-black uppercase leading-none tracking-[-0.045em] text-white/90 transition-colors duration-300 group-hover:text-[#d4a373]">
+              {signal.title}
+            </h3>
+            <span className="font-mono text-[10px] font-bold tracking-wider text-white/30">
+              {signal.number}
+            </span>
+          </div>
 
-            {/* Shiny card reflection sheen (triggers on hover during Hold/Explore) */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none z-10"
-              initial={{ x: "-100%" }}
-              whileHover={{ x: "100%" }}
-              transition={{ duration: 0.85, ease: "easeInOut" }}
-            />
+          <p className="text-[13px] font-semibold leading-snug text-white/64">
+            {signal.line}
+          </p>
 
-            <div className="h-[64%] border-b border-white/10 overflow-hidden relative">
-              <ImageFrame {...signal} title={signal.title} />
-            </div>
-
-            <div className="flex flex-1 flex-col justify-between p-4 sm:p-5 relative z-10">
-              <div className="flex items-center justify-between gap-4">
-                <span className="font-mono text-[10px] font-black uppercase tracking-[0.26em] text-white/35">
-                  {signal.number}
-                </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 font-mono text-[8px] font-black uppercase tracking-[0.16em] text-white/40 group-hover:text-white group-hover:bg-white/10 transition-colors">
-                  Open
-                </span>
-              </div>
-              <div>
-                <h3 className="font-syne text-[clamp(1.1rem,1.6vw,1.8rem)] font-black uppercase leading-none tracking-[-0.08em] text-white">
-                  {signal.title}
-                </h3>
-                <p className="mt-2 text-xs font-bold leading-tight tracking-[-0.03em] text-white/80 line-clamp-2">
-                  {signal.line}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
+          <div className="flex flex-col gap-1">
+            <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-[#d4a373]/90">
+              {signal.origin}
+            </span>
+            <span className="font-mono text-[8px] uppercase tracking-[0.12em] text-white/30 transition-colors group-hover:text-white/50">
+              {signal.compound}
+            </span>
+          </div>
+        </div>
       </motion.button>
     </motion.div>
   );
 }
 
-/**
- * FourCards: Container component holding and laying out the 4 vertical poster slices/cards.
- */
 function FourCards({ scrollYProgress, onOpen }) {
   return (
-    <div
-      className="absolute inset-0"
-      style={{ transformStyle: "preserve-3d" }}
-    >
+    <div className="absolute inset-0" style={{ transformStyle: "preserve-3d" }}>
       {identitySignals.map((signal, index) => (
-        <SplitFlipCard
-          key={signal.title}
+        <PosterSlicePiece key={`slice-${signal.title}`} index={index} progress={scrollYProgress} />
+      ))}
+
+      {identitySignals.map((signal, index) => (
+        <RealIdentityCard
+          key={`card-${signal.title}`}
           signal={signal}
           index={index}
           progress={scrollYProgress}
@@ -550,6 +414,7 @@ function MobileIdentityFallback({ onOpen }) {
           {identitySignals.map((signal, index) => (
             <button
               key={signal.title}
+              type="button"
               onClick={() => onOpen(index)}
               className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.05] text-left"
             >
@@ -575,28 +440,26 @@ function MobileIdentityFallback({ onOpen }) {
 
 export default function IdentityStack() {
   const [activeSignal, setActiveSignal] = useState(null);
-  const containerRef = useRef(null);
+  const ref = useRef(null);
+
   const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
+    target: ref,
+    offset: ["start start", "end start"],
   });
 
   return (
-    <section
-      ref={containerRef}
-      id="identity"
-      className="relative h-auto md:h-[180vh] bg-[#050505] text-white overflow-visible"
-    >
-      <StickyStage scrollYProgress={scrollYProgress}>
-        <FourCards scrollYProgress={scrollYProgress} onOpen={setActiveSignal} />
-      </StickyStage>
+    <section id="identity" className="overflow-visible bg-[#050505] text-white">
+      <div ref={ref} className="relative hidden min-h-[175vh] md:block">
+        <StickyStage scrollYProgress={scrollYProgress}>
+          <FourCards scrollYProgress={scrollYProgress} onOpen={setActiveSignal} />
+        </StickyStage>
+      </div>
+
       <MobileIdentityFallback onOpen={setActiveSignal} />
+
       <AnimatePresence>
         {activeSignal !== null && (
-          <SignalModal
-            signal={identitySignals[activeSignal]}
-            onClose={() => setActiveSignal(null)}
-          />
+          <SignalModal signal={identitySignals[activeSignal]} onClose={() => setActiveSignal(null)} />
         )}
       </AnimatePresence>
     </section>
