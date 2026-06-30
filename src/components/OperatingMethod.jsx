@@ -217,56 +217,67 @@ function LoopDetailPanel({ item, onReset }) {
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: -20, scale: 0.98 }}
       transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-      className="relative overflow-hidden rounded-[32px] border border-white/12 bg-black/35 p-8 text-white shadow-[0_24px_80px_rgba(0,0,0,0.85)] backdrop-blur-2xl flex flex-col justify-between h-[520px] w-full"
+      className="relative overflow-hidden rounded-[2rem] border border-white/18 bg-white/[0.045] backdrop-blur-[42px] shadow-[0_36px_130px_rgba(0,0,0,0.48)] ring-1 ring-white/[0.08] p-8 text-white flex flex-col justify-between h-[520px] w-full"
     >
+      {/* Glossy / Reflective highlights */}
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0.055)_32%,rgba(255,255,255,0.018)_62%,rgba(255,255,255,0.075)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(255,255,255,0.18),transparent_28%),radial-gradient(circle_at_88%_78%,rgba(255,255,255,0.07),transparent_34%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-black/[0.12]" />
+
       {/* Decorative subtle background radial glow */}
       <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-[#facc15]/3 blur-3xl" />
 
-      <div className="relative">
-        <div className="flex items-center justify-between border-b border-white/5 pb-4">
-          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-[#facc15]/80">
-            Stage {item.number} / 07
+      {/* Main card content wrapped in relative z-10 */}
+      <div className="relative z-10 flex flex-col justify-between h-full w-full">
+        <div>
+          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-[#facc15]/90">
+              Stage {item.number} / 07
+            </span>
+            <button
+              type="button"
+              onClick={onReset}
+              className="rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 font-mono text-[9px] font-black uppercase tracking-[0.18em] text-white/72 backdrop-blur-md transition duration-300 hover:border-[#facc15]/30 hover:bg-[#facc15]/10 hover:text-white cursor-pointer"
+            >
+              Reset
+            </button>
+          </div>
+
+          <h3 className="mt-5 font-syne text-4xl font-black uppercase tracking-[-0.06em] text-white">
+            {item.title}
+          </h3>
+
+          <div className="mt-5">
+            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-white/52">Core Belief</span>
+            <p className="mt-1 text-base font-bold leading-snug tracking-tight text-white/92">
+              {item.belief}
+            </p>
+          </div>
+
+          <div className="mt-4">
+            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-white/52">Explanation</span>
+            <p className="mt-1 text-sm font-normal leading-relaxed text-white/74">
+              {item.explanation}
+            </p>
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-[1.25rem] border border-white/12 bg-white/[0.055] backdrop-blur-[32px] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_18px_60px_rgba(0,0,0,0.28)] p-4 mt-auto">
+          {/* Glossy top highlight */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/35" />
+          
+          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-white/52">
+            Operating Principle
           </span>
-          <button
-            type="button"
-            onClick={onReset}
-            className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 font-mono text-[9px] font-black uppercase tracking-[0.18em] text-white/45 transition duration-300 hover:border-[#facc15]/30 hover:bg-[#facc15]/10 hover:text-white cursor-pointer"
-          >
-            Reset
-          </button>
-        </div>
-
-        <h3 className="mt-5 font-syne text-4xl font-black uppercase tracking-[-0.06em] text-white">
-          {item.title}
-        </h3>
-
-        <div className="mt-5">
-          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[#facc15]/75">Core Belief</span>
-          <p className="mt-1 text-base font-bold leading-snug tracking-tight text-zinc-100">
-            {item.belief}
+          <p className="mt-1 text-xs font-semibold tracking-wide text-white/92 uppercase">
+            {item.principle}
           </p>
         </div>
 
-        <div className="mt-4">
-          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">Explanation</span>
-          <p className="mt-1 text-sm font-normal leading-relaxed text-zinc-400">
-            {item.explanation}
-          </p>
+        <div className="flex justify-between items-center border-t border-white/5 pt-3 mt-4 text-[9px] font-mono text-white/52">
+          <span>Active OS Loop</span>
+          <span>{item.number} / 07</span>
         </div>
-      </div>
-
-      <div className="relative rounded-xl border border-white/5 bg-black/30 p-4 mt-auto">
-        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">
-          Operating Principle
-        </span>
-        <p className="mt-1 text-xs font-semibold tracking-wide text-zinc-300 uppercase">
-          {item.principle}
-        </p>
-      </div>
-
-      <div className="flex justify-between items-center border-t border-white/5 pt-3 mt-4 text-[9px] font-mono text-white/20">
-        <span>Active OS Loop</span>
-        <span>{item.number} / 07</span>
       </div>
     </motion.article>
   );
@@ -555,7 +566,7 @@ export default function OperatingMethod() {
 
       {/* DESKTOP & TABLET VIEW: Responsive Grid Layout */}
       <div className="relative z-10 hidden lg:flex min-h-screen w-full flex-col justify-center items-center py-12 px-8 xl:px-12 max-w-[1700px] mx-auto overflow-hidden">
-        <div className="flex flex-col xl:grid xl:grid-cols-[28%_44%_28%] items-center justify-between w-full gap-10 xl:gap-12 relative">
+        <div className="flex flex-col xl:grid xl:grid-cols-[28%_44%_28%] items-center justify-between w-full gap-8 lg:gap-12 xl:gap-20 2xl:gap-24 relative lg:-translate-y-7 xl:-translate-y-9">
           
           {/* LEFT ZONE: Philosophy Editorial Typography */}
           <div ref={textLeftRef} className="w-full xl:w-auto flex flex-col justify-between xl:h-[520px] select-none text-left shrink-0">
@@ -579,13 +590,13 @@ export default function OperatingMethod() {
           {/* TABLET RESPONSIVE WRAPPER (Groups Orbit and Right Panel side-by-side on tablet/medium, disappears on XL grid) */}
           <div className="flex flex-col md:flex-row items-center justify-between w-full gap-8 xl:contents">
             
-            {/* CENTER ZONE: Interactive SVG Orbit OS (Never below 600px, ideally 620px-760px) */}
-            <div className="flex justify-center items-center w-full max-w-[620px] xl:max-w-none flex-shrink-0">
+            {/* CENTER ZONE: Interactive SVG Orbit OS */}
+            <div className="flex justify-center items-center w-full max-w-[560px] xl:max-w-none flex-shrink-0 -mt-12 xl:mt-0 md:-translate-y-6 lg:-translate-y-10 xl:-translate-y-12">
               <motion.div
                 ref={orbitContainerRef}
                 animate={{ x: mouseOffset.x, y: mouseOffset.y }}
                 transition={{ type: "tween", ease: "easeOut", duration: 0.8 }}
-                style={{ width: "clamp(620px, 42vw, 760px)" }}
+                style={{ width: "clamp(540px, 36vw, 680px)" }}
                 className="aspect-square flex items-center justify-center relative flex-shrink-0"
               >
                 <svg
@@ -801,9 +812,9 @@ export default function OperatingMethod() {
               </motion.div>
             </div>
 
-            {/* RIGHT ZONE: Details Glass Panel (clamp 420px to 540px, never overlaps) */}
-            <div ref={rightPanelRef} className="w-full md:w-[460px] xl:w-auto flex justify-end shrink-0">
-              <div className="w-full xl:w-[460px] xl:max-w-[480px]">
+            {/* RIGHT ZONE: Details Glass Panel (never overlaps) */}
+            <div ref={rightPanelRef} className="w-full md:w-[460px] xl:w-auto flex justify-end shrink-0 relative xl:translate-x-8 2xl:translate-x-12">
+              <div className="w-full xl:w-[380px] xl:max-w-[380px]">
                 <AnimatePresence mode="wait">
                   {activeItem ? (
                     <LoopDetailPanel
@@ -818,58 +829,64 @@ export default function OperatingMethod() {
                       animate={{ opacity: 1, x: 0, scale: 1 }}
                       exit={{ opacity: 0, x: -20, scale: 0.98 }}
                       transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-                      className="relative overflow-hidden rounded-[32px] border border-white/12 bg-black/35 p-8 text-white shadow-[0_24px_80px_rgba(0,0,0,0.85)] backdrop-blur-2xl flex flex-col justify-between h-[520px] w-full"
+                      className="relative overflow-hidden rounded-[2rem] border border-white/20 bg-white/[0.075] backdrop-blur-[34px] shadow-[0_40px_140px_rgba(0,0,0,0.65)] p-8 text-white flex flex-col justify-between h-[520px] w-full before:content-[''] before:pointer-events-none before:absolute before:inset-0 before:bg-[linear-gradient(135deg,rgba(255,255,255,0.32)_0%,rgba(255,255,255,0.10)_28%,rgba(255,255,255,0.035)_55%,rgba(255,255,255,0.12)_100%)] after:content-[''] after:pointer-events-none after:absolute after:inset-[1px] after:rounded-[calc(2rem-1px)] after:bg-[radial-gradient(circle_at_18%_10%,rgba(255,255,255,0.22),transparent_34%),radial-gradient(circle_at_90%_85%,rgba(255,255,255,0.10),transparent_36%)]"
                     >
                       {/* Decorative subtle background radial glow */}
                       <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-[#facc15]/3 blur-3xl" />
 
-                      <div className="relative">
-                        <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-white/35">
-                            Starting Point
+                      {/* Main card content wrapped in relative z-10 */}
+                      <div className="relative z-10 flex flex-col justify-between h-full w-full">
+                        <div>
+                          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-white/50">
+                              Starting Point
+                            </span>
+                            <button
+                              type="button"
+                              className="rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 font-mono text-[9px] font-black uppercase tracking-[0.18em] text-white/35 backdrop-blur-md transition duration-300 cursor-not-allowed"
+                              disabled
+                            >
+                              Reset
+                            </button>
+                          </div>
+
+                          <h3 className="mt-5 font-syne text-4xl font-black uppercase tracking-[-0.06em] text-white">
+                            Curiosity
+                          </h3>
+
+                          <div className="mt-5">
+                            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-white/50">Core Concept</span>
+                            <p className="mt-1 text-lg font-bold leading-snug tracking-tight text-white/90">
+                              Everything starts from curiosity.
+                            </p>
+                          </div>
+
+                          <div className="mt-4">
+                            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-white/45">Explanation</span>
+                            <p className="mt-1 text-sm font-normal leading-relaxed text-white/70">
+                              The loop starts when something feels interesting enough to build. That spark
+                              becomes a project, and the project begins exposing the next stage. Scroll
+                              down to watch the system build itself.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="relative overflow-hidden rounded-[1.25rem] border border-white/14 bg-white/[0.085] backdrop-blur-[26px] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_20px_70px_rgba(0,0,0,0.35)] p-4 mt-auto">
+                          {/* Glossy top highlight */}
+                          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/35" />
+                          
+                          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-white/50">
+                            Operating Principle
                           </span>
-                          <button
-                            type="button"
-                            className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 font-mono text-[9px] font-black uppercase tracking-[0.18em] text-white/20 transition duration-300 cursor-not-allowed"
-                            disabled
-                          >
-                            Reset
-                          </button>
-                        </div>
-
-                        <h3 className="mt-5 font-syne text-4xl font-black uppercase tracking-[-0.06em] text-white">
-                          Curiosity
-                        </h3>
-
-                        <div className="mt-5">
-                          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-[#facc15]/60">Core Concept</span>
-                          <p className="mt-1 text-lg font-bold leading-snug tracking-tight text-zinc-100">
-                            Everything starts from curiosity.
+                          <p className="mt-1 text-xs font-semibold tracking-wide text-white/90 uppercase">
+                            The closed operating loop never ends.
                           </p>
                         </div>
 
-                        <div className="mt-4">
-                          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">Explanation</span>
-                          <p className="mt-1 text-sm font-normal leading-relaxed text-zinc-400">
-                            The loop starts when something feels interesting enough to build. That spark
-                            becomes a project, and the project begins exposing the next stage. Scroll
-                            down to watch the system build itself.
-                          </p>
+                        <div className="flex justify-between items-center border-t border-white/5 pt-3 mt-4 text-[9px] font-mono text-white/50">
+                          <span>Starting state</span>
+                          <span>00 / 07</span>
                         </div>
-                      </div>
-
-                      <div className="relative rounded-xl border border-white/5 bg-black/30 p-4 mt-auto">
-                        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-white/30">
-                          Operating Principle
-                        </span>
-                        <p className="mt-1 text-xs font-semibold tracking-wide text-zinc-300 uppercase">
-                          The closed operating loop never ends.
-                        </p>
-                      </div>
-
-                      <div className="flex justify-between items-center border-t border-white/5 pt-3 mt-4 text-[9px] font-mono text-white/20">
-                        <span>Starting state</span>
-                        <span>00 / 07</span>
                       </div>
                     </motion.article>
                   )}

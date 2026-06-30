@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 
 const asset = (fileName) => `${import.meta.env.BASE_URL}assets/${fileName}`;
 const posterAsset = asset("identity-cinematic-poster.webp");
@@ -9,93 +9,99 @@ const identitySignals = [
     number: "01",
     title: "Structure",
     line: "Standards before speed.",
-    story:
-      "Structure is the operating system beneath everything I build: showing up with seriousness, holding a standard, and doing the work before asking for outcomes.",
+    text: "Structured environments taught me accountability, presence, and the value of carrying myself with seriousness before chasing outcomes.",
+    story: "Structure is the part of me that came before ambition. It is the habit of respecting routines, showing up with presence, and understanding that standards are not decoration — they are the operating system. This signal connects Sainik School, NCC, and every environment that taught me to take myself seriously before asking the world to do the same.",
     origin: "Sainik School / NCC",
     compound: "Better standards",
     image: asset("identity-structure.webp"),
-    alt: "Hemanth Sai in NCC uniform",
-    objectPosition: "50% 30%",
+    alt: "Hemanth Sai in NCC uniform on horseback",
+    objectPosition: "50% 30%"
   },
   {
     number: "02",
     title: "Discipline",
     line: "Practice before confidence.",
-    story:
-      "Discipline came from repetition, correction, fatigue, and the quiet work nobody applauds. Confidence is earned through return after return.",
+    text: "Karate taught me repetition, body control, discomfort, and the quiet confidence that comes from doing hard things before anyone is watching.",
+    story: "Discipline is not a motivational quote for me. It is physical. It came from repetition, training, correction, fatigue, and the silent work nobody claps for. Karate made confidence feel earned, not borrowed. That same pattern now moves into learning, coding, design, and building — repeat, refine, sharpen, return.",
     origin: "Karate / Training",
     compound: "Consistent execution",
     image: asset("identity-discipline.webp"),
-    alt: "Karate training collage",
-    objectPosition: "50% 22%",
+    alt: "Karate training collage from Hemanth Sai’s early years",
+    objectPosition: "50% 22%"
   },
   {
     number: "03",
     title: "Voice",
     line: "Ideas need expression.",
-    story:
-      "Voice is the bridge between thinking and impact. A thought becomes useful when it can be communicated clearly enough to land and be remembered.",
+    text: "Speaking taught me that clarity is power. A thought becomes more useful when it can be communicated, understood, and remembered.",
+    story: "Voice is the bridge between thinking and impact. Public speaking trained me to hold an idea in front of people and make it clear enough to land. This matters because building is not only about making things; it is also about explaining why they matter, what they change, and why someone should care.",
     origin: "Public speaking / Stage",
     compound: "Clear communication",
     image: asset("identity-voice.webp"),
     alt: "Hemanth Sai speaking at a podium",
-    objectPosition: "50% 28%",
+    objectPosition: "50% 28%"
   },
   {
     number: "04",
     title: "Builder Mode",
     line: "Visible work beats hidden potential.",
-    story:
-      "This is where the earlier signals become visible work: interfaces, systems, repos, projects, notes, demos, and proof that can survive feedback.",
+    text: "Now the same pattern moves into technology: turning curiosity into projects, systems, pages, notes, prototypes, and proof that can be seen and improved.",
+    story: "Builder Mode is where all the earlier signals become visible. Structure gives the base, discipline keeps the rhythm, voice explains the work, and technology becomes the arena. I am learning to convert curiosity into artifacts: interfaces, repos, systems, notes, demos, case studies, and products that can survive feedback.",
     origin: "AI / Software / Product",
     compound: "Shippable artifacts",
     image: asset("identity-builder.webp"),
     alt: "Hemanth Sai working on a laptop",
-    objectPosition: "50% 45%",
-  },
+    objectPosition: "50% 45%"
+  }
 ];
 
-const POSTER_WIDTH = 1100;
-const POSTER_HEIGHT = 620;
-const PANEL_WIDTH = POSTER_WIDTH / 4;
-
-const joinedX = [-412.5, -137.5, 137.5, 412.5];
-const sliceX = [-475, -160, 160, 475];
-
-const cardPositions = [
-  { x: -205, y: -125, r: -3 },
-  { x: 205, y: -125, r: 3 },
-  { x: -205, y: 125, r: 2.5 },
-  { x: 205, y: 125, r: -2.5 },
-];
-
-function ImageFrame({ src, alt, title, objectPosition }) {
+function FadeIn({ children, delay = 0, y = 24, className = "" }) {
   return (
-    <div className="relative h-full w-full overflow-hidden bg-zinc-900">
-      <img
-        src={src}
-        alt={alt}
-        style={{ objectPosition }}
-        className="h-full w-full object-cover brightness-100 contrast-105 saturate-[0.92] transition-transform duration-700 group-hover:scale-[1.04]"
-      />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/10" />
-      <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_70px_rgba(0,0,0,0.48)]" />
-      <span className="absolute bottom-3 left-3 rounded-full border border-white/10 bg-black/35 px-3 py-1.5 font-mono text-[8px] uppercase tracking-[0.18em] text-white/65 backdrop-blur-md">
-        {title}
-      </span>
+    <motion.div
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function ImageFrame({ src, alt, label, className = "", imgStyle }) {
+  const [broken, setBroken] = useState(false);
+  return (
+    <div className={`noise group relative overflow-hidden bg-white/[0.04] ${className}`}>
+      {!broken ? (
+        <img
+          src={src}
+          alt={alt}
+          onError={() => setBroken(true)}
+          loading="lazy"
+          style={imgStyle}
+          className="h-full w-full object-cover brightness-100 contrast-105 saturate-[0.92] transition-transform duration-1000 group-hover:scale-[1.035]"
+        />
+      ) : (
+        <div className="flex h-full min-h-[220px] w-full items-center justify-center bg-[linear-gradient(135deg,#171717,#050505)] px-5 text-center">
+          <span className="rounded-full border border-white/10 px-5 py-3 text-xs uppercase tracking-[0.35em] text-white/55">
+            {label}
+          </span>
+        </div>
+      )}
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.38))]" />
+      <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_90px_rgba(0,0,0,0.5)]" />
     </div>
   );
 }
 
-function SignalModal({ signal, onClose }) {
+function IdentitySignalModal({ signal, onClose }) {
   useEffect(() => {
     const closeOnKey = (event) => {
       if (event.key === "Escape") onClose();
     };
-
     window.addEventListener("keydown", closeOnKey);
     document.body.style.overflow = "hidden";
-
     return () => {
       window.removeEventListener("keydown", closeOnKey);
       document.body.style.overflow = "";
@@ -104,58 +110,67 @@ function SignalModal({ signal, onClose }) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 px-4 py-6 backdrop-blur-2xl"
+      className="fixed inset-0 z-[95] flex items-center justify-center bg-black/55 px-4 py-8 backdrop-blur-3xl"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
     >
       <motion.article
-        initial={{ opacity: 0, y: 28, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 28, scale: 0.96 }}
-        transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ opacity: 0, y: 34, scale: 0.94, filter: "blur(10px)" }}
+        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+        exit={{ opacity: 0, y: 34, scale: 0.94, filter: "blur(10px)" }}
+        transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
         onClick={(event) => event.stopPropagation()}
-        className="grid max-h-[88svh] w-full max-w-5xl overflow-y-auto rounded-[2rem] border border-white/20 bg-[#0c0c0c]/95 text-white shadow-[0_40px_160px_rgba(0,0,0,0.85)] md:grid-cols-[0.9fr_1.1fr]"
+        className="noise relative grid max-h-[88svh] w-full max-w-6xl overflow-y-auto rounded-[2.25rem] border border-white/25 bg-white/[0.12] text-white shadow-[0_44px_180px_rgba(0,0,0,0.78)] backdrop-blur-3xl md:grid-cols-[0.92fr_1.08fr] md:rounded-[3.5rem]"
       >
-        <div className="min-h-[280px] overflow-hidden md:min-h-[580px]">
-          <ImageFrame {...signal} title={signal.title} />
+        <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(135deg,rgba(255,255,255,0.22),rgba(255,255,255,0.055)_34%,rgba(141,162,255,0.10)_68%,rgba(255,255,255,0.08))]" />
+        
+        <div className="relative min-h-[260px] p-3 md:min-h-[620px] md:p-4">
+          <ImageFrame
+            src={signal.image}
+            alt={signal.alt}
+            label={signal.title}
+            className="h-full min-h-[260px] rounded-[1.75rem] border border-white/12 md:min-h-[590px] md:rounded-[3rem]"
+            imgStyle={{ objectPosition: signal.objectPosition }}
+          />
         </div>
-        <div className="relative flex flex-col justify-center p-7 sm:p-10">
+
+        <div className="relative flex flex-col justify-center p-6 sm:p-8 md:p-12 text-left">
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-5 top-5 grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.06] text-xl text-white/70 transition hover:bg-white/15 hover:text-white"
+            className="absolute right-5 top-5 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/[0.10] p-0 text-white/72 transition-colors hover:bg-white/20 hover:text-white"
             aria-label="Close identity signal"
           >
-            ×
+            <span className="block -translate-y-[1px] text-[30px] font-extralight leading-none">
+              &times;
+            </span>
           </button>
-          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-white/40">
-            {signal.number} / Identity signal
+          
+          <p className="text-[10px] font-black uppercase tracking-[0.32em] text-white/44">
+            {signal.number} / Identity Signal
           </p>
-          <h3 className="mt-5 font-syne text-[clamp(2.8rem,8vw,5.8rem)] font-black uppercase leading-[0.82] tracking-[-0.085em]">
+          <h3 className="mt-5 pr-14 text-[clamp(2.7rem,11vw,6.8rem)] font-black uppercase leading-[0.82] tracking-[-0.09em] text-white">
             {signal.title}
           </h3>
-          <p className="mt-5 text-2xl font-black leading-tight tracking-[-0.04em] text-white/90">
+          <p className="mt-6 max-w-2xl text-2xl font-black leading-tight tracking-[-0.055em] text-white/90 sm:text-3xl">
             {signal.line}
           </p>
-          <p className="mt-6 text-base leading-relaxed text-white/65 sm:text-lg">
+          <p className="mt-6 max-w-3xl text-base font-medium leading-relaxed text-white/68 sm:text-lg">
             {signal.story}
           </p>
+
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
-              <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/35">
-                Origin
-              </p>
-              <p className="mt-2 text-sm font-bold uppercase tracking-[0.1em] text-white/85">
+            <div className="rounded-[1.5rem] border border-white/14 bg-white/[0.08] p-4">
+              <p className="text-[9px] font-black uppercase tracking-[0.24em] text-white/36">Origin</p>
+              <p className="mt-2 text-sm font-black uppercase tracking-[0.14em] text-white/78">
                 {signal.origin}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
-              <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-white/35">
-                How it compounds
-              </p>
-              <p className="mt-2 text-sm font-bold uppercase tracking-[0.1em] text-white/85">
+            <div className="rounded-[1.5rem] border border-white/14 bg-black/20 p-4">
+              <p className="text-[9px] font-black uppercase tracking-[0.24em] text-white/36">How it compounds</p>
+              <p className="mt-2 text-sm font-black uppercase tracking-[0.14em] text-white/78">
                 {signal.compound}
               </p>
             </div>
@@ -166,272 +181,263 @@ function SignalModal({ signal, onClose }) {
   );
 }
 
-function FloatingDust() {
-  const canvasRef = useRef(null);
+const joinedX = [-412.5, -137.5, 137.5, 412.5];
+const tableX = [-360, -120, 120, 360];
+const tableY = [-18, -86, -86, -18];
+const tableRotateZ = [-7.5, -2, 2, 7.5];
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return undefined;
+function SplitFlipCard({ signal, index, progress, onOpen }) {
+  const x = useTransform(progress, [0, 0.28, 0.36, 0.50, 0.78, 0.86, 0.96, 1], [joinedX[index], joinedX[index], joinedX[index], tableX[index], tableX[index], tableX[index], joinedX[index], joinedX[index]]);
+  const openSafeY = 72;
+  const y = useTransform(progress, [0, 0.28, 0.36, 0.50, 0.78, 0.86, 0.96, 1], [0, 0, 0, tableY[index] + openSafeY, tableY[index] + openSafeY, tableY[index] + openSafeY, 0, 0]);
+  const rotateZ = useTransform(progress, [0, 0.28, 0.36, 0.50, 0.78, 0.86, 0.96, 1], [0, 0, 0, tableRotateZ[index], tableRotateZ[index], tableRotateZ[index], 0, 0]);
+  const rotateY = useTransform(progress, [0, 0.50, 0.58, 0.78, 0.86, 1], [0, 0, 180, 180, 360, 360]);
+  const scale = useTransform(progress, [0, 0.50, 0.78, 1], [1, 0.94, 0.94, 1]);
+  const pointerEvents = useTransform(progress, (value) => value > 0.58 && value < 0.78 ? "auto" : "none");
 
-    const ctx = canvas.getContext("2d");
-    let animationId;
+  const joinedRadius = index === 0 ? "32px 0px 0px 32px" : index === 3 ? "0px 32px 32px 0px" : "0px 0px 0px 0px";
+  const radius = useTransform(progress, [0, 0.36, 0.50, 0.86, 0.96, 1], [joinedRadius, joinedRadius, "32px 32px 32px 32px", "32px 32px 32px 32px", joinedRadius, joinedRadius]);
+  const seamOpacity = useTransform(progress, [0, 0.28, 0.36, 0.86, 0.96, 1], [0, 0, 0.45, 0.45, 0, 0]);
+  const border = useTransform(progress, [0, 0.36, 0.50, 0.86, 0.96, 1], ["1px solid rgba(255, 255, 255, 0)", "1px solid rgba(255, 255, 255, 0)", "1px solid rgba(255, 255, 255, 0.14)", "1px solid rgba(255, 255, 255, 0.14)", "1px solid rgba(255, 255, 255, 0)", "1px solid rgba(255, 255, 255, 0)"]);
+  const backBorder = useTransform(progress, [0, 0.36, 0.50, 0.86, 0.96, 1], ["1px solid rgba(255, 255, 255, 0)", "1px solid rgba(255, 255, 255, 0)", "1px solid rgba(255, 255, 255, 0.12)", "1px solid rgba(255, 255, 255, 0.12)", "1px solid rgba(255, 255, 255, 0)", "1px solid rgba(255, 255, 255, 0)"]);
+  const shadow = useTransform(progress, [0, 0.36, 0.50, 0.86, 0.96, 1], ["0px 0px 0px rgba(0,0,0,0)", "0px 0px 0px rgba(0,0,0,0)", "0px 38px 130px rgba(0,0,0,0.62)", "0px 38px 130px rgba(0,0,0,0.62)", "0px 0px 0px rgba(0,0,0,0)", "0px 0px 0px rgba(0,0,0,0)"]);
 
-    const resize = () => {
-      const parent = canvas.parentElement;
-      canvas.width = parent?.offsetWidth || window.innerWidth;
-      canvas.height = parent?.offsetHeight || window.innerHeight;
-    };
+  const posterWidth = 1100;
+  const posterHeight = 620;
+  const panelWidth = posterWidth / 4;
+  const panelHeight = posterHeight;
 
-    resize();
-    window.addEventListener("resize", resize);
-
-    const particles = Array.from({ length: 34 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      radius: Math.random() * 1.3 + 0.25,
-      vx: (Math.random() - 0.5) * 0.12,
-      vy: (Math.random() - 0.5) * 0.1 - 0.03,
-      opacity: Math.random() * 0.26 + 0.04,
-    }));
-
-    const animate = () => {
-      if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      for (const particle of particles) {
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${particle.opacity})`;
-        ctx.fill();
-
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-
-        if (particle.x < 0) particle.x = canvas.width;
-        if (particle.x > canvas.width) particle.x = 0;
-        if (particle.y < 0) particle.y = canvas.height;
-        if (particle.y > canvas.height) particle.y = 0;
-      }
-
-      animationId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener("resize", resize);
-      cancelAnimationFrame(animationId);
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-40" />;
+  return (
+    <motion.button
+      type="button"
+      onClick={onOpen}
+      className="absolute left-1/2 top-1/2 border-0 bg-transparent p-0 text-left outline-none"
+      style={{
+        width: panelWidth,
+        height: panelHeight,
+        x,
+        y,
+        rotateZ,
+        scale,
+        pointerEvents,
+        zIndex: 20 + index,
+        perspective: 1400,
+        transformStyle: "preserve-3d",
+        translateX: "-50%",
+        translateY: "-50%",
+        borderRadius: radius
+      }}
+    >
+      {index > 0 && (
+        <motion.div
+          className="pointer-events-none absolute left-0 top-[5%] z-50 h-[90%] w-px bg-white/30"
+          style={{ opacity: seamOpacity }}
+        />
+      )}
+      <motion.div className="relative h-full w-full" style={{ rotateY, transformStyle: "preserve-3d", borderRadius: radius }}>
+        <motion.div
+          className="absolute inset-0 overflow-hidden bg-[#070707] [backface-visibility:hidden]"
+          style={{
+            borderRadius: radius,
+            boxShadow: shadow,
+            border,
+            backgroundImage: `url(${posterAsset})`,
+            backgroundSize: `${posterWidth}px ${posterHeight}px`,
+            backgroundPosition: `-${index * panelWidth}px 0px`,
+            backgroundRepeat: "no-repeat"
+          }}
+        />
+        <motion.div
+          className="absolute inset-0 flex flex-col overflow-hidden bg-white/[0.065] text-white backdrop-blur-3xl [backface-visibility:hidden] [transform:rotateY(180deg)]"
+          style={{
+            borderRadius: radius,
+            boxShadow: shadow,
+            border: backBorder
+          }}
+        >
+          <ImageFrame
+            src={signal.image}
+            alt={signal.alt}
+            label={signal.title}
+            className="h-[66%] border-b border-white/10"
+            imgStyle={{ objectPosition: signal.objectPosition }}
+          />
+          <div className="relative flex flex-1 flex-col p-4 text-left">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-[10px] font-black uppercase tracking-[0.26em] text-white/38">{signal.number}</span>
+              <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-[8px] font-black uppercase tracking-[0.16em] text-white/45">Open</span>
+            </div>
+            <h3 className="mt-3 text-[clamp(1.45rem,2vw,2.1rem)] font-black uppercase leading-[0.84] tracking-[-0.085em] text-white">
+              {signal.title}
+            </h3>
+            <p className="mt-3 text-sm font-black leading-snug tracking-[-0.05em] text-white/88">
+              {signal.line}
+            </p>
+          </div>
+        </motion.div>
+      </motion.div>
+    </motion.button>
+  );
 }
 
-function StickyStage({ scrollYProgress, children }) {
+function CinematicSplitIntroCard({ mobile = false, onOpen }) {
+  if (mobile) {
+    return (
+      <FadeIn>
+        <div>
+          <h3 className="mb-5 max-w-5xl text-[clamp(2.15rem,13vw,3.8rem)] font-black uppercase leading-[0.82] tracking-[-0.095em] text-white">
+            Before the builder,<br />there was the pattern.
+          </h3>
+          <div className="noise relative overflow-hidden rounded-[2rem] border border-white/14 bg-[#070707] shadow-[0_44px_170px_rgba(0,0,0,0.62)]">
+            <img
+              src={posterAsset}
+              alt="Before the builder, there was the pattern. The origin before the output."
+              className="w-full"
+            />
+          </div>
+        </div>
+      </FadeIn>
+    );
+  }
+
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 20%", "end end"] });
+
+  // Subtle scroll-based stage scale to let the component breathe and zoom during flips
   const stageScale = useTransform(
     scrollYProgress,
-    [0, 0.16, 0.78, 0.92, 1],
-    [0.78, 0.78, 0.82, 0.78, 0.78]
+    [0.00, 0.28, 0.50, 0.78, 0.86, 0.96, 1.00],
+    [0.68, 0.68, 0.72, 0.76, 0.76, 0.68, 0.68]
   );
 
   return (
-    <div className="sticky top-0 grid h-screen w-full place-items-center overflow-hidden bg-[#050505]">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#060608] via-[#0b0b0d] to-[#040405]" />
-      <div className="pointer-events-none absolute left-1/2 top-[-10%] h-[65%] w-[75%] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(212,163,115,0.065)_0%,transparent_70%)] blur-[90px]" />
-      <div className="pointer-events-none absolute left-1/2 bottom-[-15%] h-[50%] w-[85%] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.025)_0%,transparent_60%)] blur-[100px]" />
-      <FloatingDust />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_38%,rgba(0,0,0,0.86)_100%)]" />
-
-      <motion.div
-        className="absolute left-1/2 top-1/2 h-[620px] w-[1100px] origin-center"
-        style={{
-          x: "-50%",
-          y: "-50%",
-          scale: stageScale,
-          perspective: 1400,
-          transformStyle: "preserve-3d",
-        }}
-      >
-        {children}
-      </motion.div>
+    <div ref={ref} className="relative hidden min-h-[300vh] md:block">
+      <div className="sticky top-0 grid h-screen place-items-center overflow-visible">
+        <motion.div
+          className="relative h-[min(64vh,620px)] w-[min(92vw,1100px)]"
+          style={{ 
+            perspective: 1400, 
+            transformStyle: "preserve-3d",
+            scale: stageScale 
+          }}
+        >
+          <div className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-white/[0.045] blur-[90px]" />
+          {identitySignals.map((signal, index) => (
+            <SplitFlipCard
+              key={signal.title}
+              signal={signal}
+              index={index}
+              progress={scrollYProgress}
+              onOpen={() => onOpen?.(index)}
+            />
+          ))}
+        </motion.div>
+      </div>
     </div>
   );
 }
 
-function PosterSlicePiece({ index, progress }) {
-  const opacity = useTransform(progress, [0, 0.22, 0.34, 0.76, 0.9, 1], [1, 1, 0, 0, 1, 1]);
-  const x = useTransform(progress, [0, 0.1, 0.26, 0.76, 0.9, 1], [joinedX[index], joinedX[index], sliceX[index], sliceX[index], joinedX[index], joinedX[index]]);
-  const rotateZ = useTransform(progress, [0, 0.1, 0.26, 0.76, 0.9, 1], [0, 0, index < 2 ? -1.5 : 1.5, index < 2 ? -1.5 : 1.5, 0, 0]);
-  const radius = index === 0 ? "32px 0 0 32px" : index === 3 ? "0 32px 32px 0" : "0";
+function MobileStackCard({ signal, index, progress, onOpen }) {
+  const targetScale = Math.max(0.84, 1 - (identitySignals.length - index - 1) * 0.045);
+  const scale = useTransform(progress, [index * 0.22, 1], [1, targetScale]);
+  const y = useTransform(progress, [index * 0.22, 1], [0, -index * 10]);
 
   return (
-    <motion.div
-      className="absolute left-1/2 top-1/2 overflow-hidden bg-[#070707]"
-      style={{
-        width: PANEL_WIDTH,
-        height: POSTER_HEIGHT,
-        x,
-        y: 0,
-        opacity,
-        rotateZ,
-        translateX: "-50%",
-        translateY: "-50%",
-        borderRadius: radius,
-        backgroundImage: `url(${posterAsset})`,
-        backgroundSize: `${POSTER_WIDTH}px ${POSTER_HEIGHT}px`,
-        backgroundPosition: `-${index * PANEL_WIDTH}px 0px`,
-        backgroundRepeat: "no-repeat",
-        pointerEvents: "none",
-      }}
-    >
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20" />
-    </motion.div>
-  );
-}
-
-function RealIdentityCard({ signal, index, progress, onOpen }) {
-  const pos = cardPositions[index];
-
-  const opacity = useTransform(progress, [0, 0.28, 0.4, 0.75, 0.88, 1], [0, 0, 1, 1, 0, 0]);
-  const x = useTransform(progress, [0, 0.28, 0.42, 0.75, 0.88, 1], [joinedX[index] * 0.28, joinedX[index] * 0.28, pos.x, pos.x, joinedX[index] * 0.28, joinedX[index] * 0.28]);
-  const y = useTransform(progress, [0, 0.28, 0.42, 0.75, 0.88, 1], [0, 0, pos.y, pos.y, 0, 0]);
-  const scale = useTransform(progress, [0, 0.28, 0.42, 0.75, 0.88, 1], [0.7, 0.7, 1, 1, 0.7, 0.7]);
-  const rotateZ = useTransform(progress, [0, 0.28, 0.42, 0.75, 0.88, 1], [0, 0, pos.r, pos.r, 0, 0]);
-  const rotateY = useTransform(progress, [0, 0.32, 0.48, 0.75, 0.88, 1], [70, 70, 0, 0, 70, 70]);
-  const z = useTransform(progress, [0, 0.28, 0.42, 0.75, 0.88, 1], [0, 0, 55, 55, 0, 0]);
-  const pointerEvents = useTransform(progress, (value) => (value > 0.48 && value < 0.75 ? "auto" : "none"));
-
-  const shadow = useTransform(
-    progress,
-    [0, 0.3, 0.45, 0.75, 0.88, 1],
-    [
-      "0px 0px 0px rgba(0,0,0,0)",
-      "0px 0px 0px rgba(0,0,0,0)",
-      "0px 26px 80px rgba(0,0,0,0.68)",
-      "0px 26px 80px rgba(0,0,0,0.68)",
-      "0px 0px 0px rgba(0,0,0,0)",
-      "0px 0px 0px rgba(0,0,0,0)",
-    ]
-  );
-
-  return (
-    <motion.div
-      className="absolute left-1/2 top-1/2"
-      style={{
-        width: 340,
-        height: 210,
-        x,
-        y,
-        z,
-        scale,
-        rotateZ,
-        rotateY,
-        opacity,
-        translateX: "-50%",
-        translateY: "-50%",
-        transformStyle: "preserve-3d",
-        pointerEvents,
-      }}
-    >
+    <div className="sticky top-20 flex min-h-[82svh] items-start justify-center py-3">
       <motion.button
         type="button"
         onClick={onOpen}
-        className="group relative flex h-full w-full cursor-pointer items-center gap-4 overflow-hidden rounded-[24px] border border-white/[0.10] bg-zinc-950/80 p-4 text-left text-white outline-none backdrop-blur-2xl"
-        whileHover={{
-          scale: 1.035,
-          y: -8,
-          borderColor: "rgba(255,255,255,0.18)",
-          transition: { duration: 0.24, ease: [0.25, 1, 0.5, 1] },
-        }}
-        style={{ boxShadow: shadow }}
+        style={{ scale, y, top: `calc(${index * 14}px)` }}
+        className="relative flex w-full max-w-md origin-top flex-col overflow-hidden rounded-[1.65rem] border border-white/12 bg-white/[0.06] text-left text-white shadow-[0_28px_100px_rgba(0,0,0,0.42)] backdrop-blur-3xl"
       >
-        <div className="relative h-[172px] w-[108px] flex-shrink-0 overflow-hidden rounded-[16px] border border-white/5 bg-zinc-900">
-          <img
-            src={signal.image}
-            alt={signal.alt}
-            style={{ objectPosition: signal.objectPosition }}
-            className="h-full w-full object-cover brightness-95 saturate-[0.9] transition-all duration-500 group-hover:scale-105 group-hover:brightness-105"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-        </div>
-
-        <div className="pointer-events-none flex h-[172px] flex-1 flex-col justify-between">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="font-syne text-[20px] font-black uppercase leading-none tracking-[-0.045em] text-white/90 transition-colors duration-300 group-hover:text-[#d4a373]">
-              {signal.title}
-            </h3>
-            <span className="font-mono text-[10px] font-bold tracking-wider text-white/30">
+        <ImageFrame
+          src={signal.image}
+          alt={signal.alt}
+          label={signal.title}
+          className="aspect-[4/3] border-b border-white/10"
+          imgStyle={{ objectPosition: signal.objectPosition }}
+        />
+        <div className="relative p-4 text-left">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-[10px] font-black uppercase tracking-[0.26em] text-white/38">
               {signal.number}
             </span>
+            <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-[8px] font-black uppercase tracking-[0.16em] text-white/45">
+              Open
+            </span>
           </div>
-
-          <p className="text-[13px] font-semibold leading-snug text-white/64">
+          <h3 className="mt-5 text-[clamp(2.05rem,12vw,3.2rem)] font-black uppercase leading-[0.84] tracking-[-0.09em] text-white">
+            {signal.title}
+          </h3>
+          <p className="mt-4 text-base font-black leading-snug tracking-[-0.05em] text-white/88">
             {signal.line}
           </p>
-
-          <div className="flex flex-col gap-1">
-            <span className="font-mono text-[8px] uppercase tracking-[0.14em] text-[#d4a373]/90">
-              {signal.origin}
-            </span>
-            <span className="font-mono text-[8px] uppercase tracking-[0.12em] text-white/30 transition-colors group-hover:text-white/50">
-              {signal.compound}
-            </span>
-          </div>
+          <p className="mt-4 text-sm font-medium leading-relaxed text-white/58">
+            {signal.text}
+          </p>
         </div>
       </motion.button>
-    </motion.div>
-  );
-}
-
-function FourCards({ scrollYProgress, onOpen }) {
-  return (
-    <div className="absolute inset-0" style={{ transformStyle: "preserve-3d" }}>
-      {identitySignals.map((signal, index) => (
-        <PosterSlicePiece key={`slice-${signal.title}`} index={index} progress={scrollYProgress} />
-      ))}
-
-      {identitySignals.map((signal, index) => (
-        <RealIdentityCard
-          key={`card-${signal.title}`}
-          signal={signal}
-          index={index}
-          progress={scrollYProgress}
-          onOpen={() => onOpen(index)}
-        />
-      ))}
     </div>
   );
 }
 
-function MobileIdentityFallback({ onOpen }) {
+function MobileStickyStack({ onOpen }) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+
   return (
-    <div className="px-5 py-14 md:hidden">
+    <div ref={ref} className="relative px-5 py-16 md:hidden">
       <div className="mx-auto max-w-md">
-        <div className="overflow-hidden rounded-[2rem] border border-white/14 bg-[#070707] shadow-[0_36px_120px_rgba(0,0,0,.58)]">
-          <img src={posterAsset} alt="Hemanth Sai identity poster" className="w-full" />
+        <FadeIn>
+          <p className="mb-3 text-[10px] font-black uppercase tracking-[0.28em] text-white/45">
+            Identity
+          </p>
+          <h2 className="text-[clamp(2.7rem,15vw,4.4rem)] font-black uppercase leading-[0.84] tracking-[-0.09em] text-white">
+            The pattern behind the proof.
+          </h2>
+          <p className="mt-5 text-base font-light leading-relaxed text-white/70">
+            Before I became interested in AI, software, and product building, I was shaped by structure, discipline, voice, and execution.
+          </p>
+        </FadeIn>
+        <div className="mt-10">
+          <CinematicSplitIntroCard mobile />
         </div>
-        <div className="mt-6 grid gap-4">
+        <div className="mt-8 pb-[70svh]">
           {identitySignals.map((signal, index) => (
-            <button
+            <MobileStackCard
               key={signal.title}
-              type="button"
-              onClick={() => onOpen(index)}
-              className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.05] text-left"
-            >
-              <div className="h-44">
-                <ImageFrame {...signal} title={signal.title} />
-              </div>
-              <div className="p-5">
-                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/35">
-                  {signal.number}
-                </p>
-                <h3 className="mt-3 font-syne text-2xl font-black uppercase tracking-[-0.06em]">
-                  {signal.title}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-white/65">{signal.line}</p>
-              </div>
-            </button>
+              signal={signal}
+              index={index}
+              progress={scrollYProgress}
+              onOpen={() => onOpen(index)}
+            />
           ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DesktopIdentityShowcase({ onOpen }) {
+  return (
+    <div className="relative hidden px-5 py-10 sm:px-8 sm:py-14 md:block md:px-10">
+      <div className="relative mx-auto max-w-[1680px]">
+        <FadeIn>
+          <p className="mb-3 text-xs font-black uppercase tracking-[0.32em] text-white/45">
+            Identity
+          </p>
+          <h2 className="max-w-6xl text-[clamp(2.7rem,9.2vw,6rem)] font-black uppercase leading-[0.84] tracking-[-0.09em] text-white">
+            The pattern behind the proof.
+          </h2>
+          <p className="mt-5 max-w-4xl text-xl font-light leading-relaxed text-white/72">
+            Before I became interested in AI, software, and product building, I was shaped by structure, discipline, voice, and execution.
+          </p>
+          <p className="mt-4 max-w-4xl text-base leading-relaxed text-white/56">
+            The environments changed — training grounds, uniforms, stages, classrooms, and laptops — but the pattern stayed the same: learn under pressure, communicate with clarity, and turn intent into visible work.
+          </p>
+        </FadeIn>
+        <div className="mt-6">
+          <CinematicSplitIntroCard onOpen={onOpen} />
         </div>
       </div>
     </div>
@@ -440,26 +446,18 @@ function MobileIdentityFallback({ onOpen }) {
 
 export default function IdentityStack() {
   const [activeSignal, setActiveSignal] = useState(null);
-  const ref = useRef(null);
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
 
   return (
-    <section id="identity" className="overflow-visible bg-[#050505] text-white">
-      <div ref={ref} className="relative hidden min-h-[175vh] md:block">
-        <StickyStage scrollYProgress={scrollYProgress}>
-          <FourCards scrollYProgress={scrollYProgress} onOpen={setActiveSignal} />
-        </StickyStage>
-      </div>
-
-      <MobileIdentityFallback onOpen={setActiveSignal} />
-
+    <section id="identity" className="relative overflow-x-clip bg-[#070707] text-white">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(255,255,255,.075),transparent_32%),radial-gradient(circle_at_86%_8%,rgba(141,162,255,.10),transparent_30%),linear-gradient(180deg,#070707,#050505)] pointer-events-none" />
+      <DesktopIdentityShowcase onOpen={setActiveSignal} />
+      <MobileStickyStack onOpen={setActiveSignal} />
       <AnimatePresence>
         {activeSignal !== null && (
-          <SignalModal signal={identitySignals[activeSignal]} onClose={() => setActiveSignal(null)} />
+          <IdentitySignalModal
+            signal={identitySignals[activeSignal]}
+            onClose={() => setActiveSignal(null)}
+          />
         )}
       </AnimatePresence>
     </section>
