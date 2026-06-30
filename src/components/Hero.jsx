@@ -62,7 +62,7 @@ export default function Hero() {
       ease: "power2.out"
     }, 0);
 
-    // 35% -> 100%: Curtains slide apart slowly to 82% (leaving 18% framing visible)
+    // 35% -> 100%: Curtains slide apart slowly to 82% (leaving 18% of their width framing visible)
     tl.to(leftPanelRef.current, {
       xPercent: -82,
       scaleX: 0.94,
@@ -285,9 +285,10 @@ export default function Hero() {
 
             {/* Faint dust/noise texture */}
             <div 
-              className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
+              className="absolute inset-0 opacity-[0.03] mix-blend-overlay animate-pulse"
               style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+                animationDuration: "4s"
               }}
             />
 
@@ -356,7 +357,7 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Sliding Cinematic Panels (Curtains) */}
+          {/* Sliding Symmetrical Cinematic Panels (Curtains) */}
           {/* Left Panel */}
           <div
             ref={leftPanelRef}
@@ -365,15 +366,15 @@ export default function Hero() {
               backgroundImage: `
                 repeating-linear-gradient(
                   90deg,
-                  rgba(255, 255, 255, 0.10) 0px,
-                  rgba(255, 255, 255, 0.035) 9px,
-                  rgba(0, 0, 0, 0.24) 22px,
-                  rgba(255, 255, 255, 0.04) 38px
+                  rgba(255,255,255,0.09) 0px,
+                  rgba(255,255,255,0.03) 8px,
+                  rgba(0,0,0,0.24) 20px,
+                  rgba(255,255,255,0.04) 34px
                 ),
                 linear-gradient(90deg,
-                  rgba(45, 5, 12, 0.98),
-                  rgba(120, 12, 28, 0.94),
-                  rgba(55, 4, 16, 0.98)
+                  rgba(45,5,12,0.98),
+                  rgba(118,12,30,0.96),
+                  rgba(45,5,12,0.98)
                 )
               `,
               boxShadow: "inset -15px 0 40px rgba(0,0,0,0.6), 5px 0 25px rgba(0,0,0,0.4)",
@@ -410,39 +411,47 @@ export default function Hero() {
             ref={rightPanelRef}
             className="absolute inset-y-0 right-0 w-1/2 z-40 border-l border-white/5 select-none pointer-events-none"
             style={{
-              backgroundImage: `
-                repeating-linear-gradient(
-                  270deg,
-                  rgba(255, 255, 255, 0.10) 0px,
-                  rgba(255, 255, 255, 0.035) 9px,
-                  rgba(0, 0, 0, 0.24) 22px,
-                  rgba(255, 255, 255, 0.04) 38px
-                ),
-                linear-gradient(270deg,
-                  rgba(45, 5, 12, 0.98),
-                  rgba(120, 12, 28, 0.94),
-                  rgba(55, 4, 16, 0.98)
-                )
-              `,
-              boxShadow: "inset 15px 0 40px rgba(0,0,0,0.6), -5px 0 25px rgba(0,0,0,0.4)",
               transformOrigin: "right center",
             }}
           >
-            {/* Velvet sheen overlay */}
+            {/* Symmetrical Mirrored Inner Curtain Container */}
             <div 
-              className="absolute inset-0 opacity-[0.22] mix-blend-overlay pointer-events-none"
+              className="absolute inset-0 w-full h-full"
               style={{
-                backgroundImage: `linear-gradient(225deg, transparent 40%, rgba(255,255,255,0.15) 48%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.15) 52%, transparent 60%)`,
+                transform: "scaleX(-1)",
+                backgroundImage: `
+                  repeating-linear-gradient(
+                    90deg,
+                    rgba(255,255,255,0.09) 0px,
+                    rgba(255,255,255,0.03) 8px,
+                    rgba(0,0,0,0.24) 20px,
+                    rgba(255,255,255,0.04) 34px
+                  ),
+                  linear-gradient(90deg,
+                    rgba(45,5,12,0.98),
+                    rgba(118,12,30,0.96),
+                    rgba(45,5,12,0.98)
+                  )
+                `,
+                boxShadow: "inset -15px 0 40px rgba(0,0,0,0.6), 5px 0 25px rgba(0,0,0,0.4)",
               }}
-            />
-            {/* Soft noise texture overlay */}
-            <div 
-              className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
-              }}
-            />
-            {/* Inner gold piping (on the left edge of right panel) */}
+            >
+              {/* Velvet sheen overlay */}
+              <div 
+                className="absolute inset-0 opacity-[0.22] mix-blend-overlay pointer-events-none"
+                style={{
+                  backgroundImage: `linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15) 48%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.15) 52%, transparent 60%)`,
+                }}
+              />
+              {/* Soft noise texture overlay */}
+              <div 
+                className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
+                }}
+              />
+            </div>
+            {/* Inner gold piping (on the left edge of right panel - not mirrored so it meeting at the seam!) */}
             <div 
               ref={rightSeamRef}
               className="absolute inset-y-0 left-0 w-[2px]"
