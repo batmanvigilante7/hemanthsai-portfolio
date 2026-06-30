@@ -32,9 +32,9 @@ export default function Hero() {
     // Initial states for scroll-driven elements
     gsap.set([leftPanelRef.current, rightPanelRef.current], { xPercent: 0, scaleX: 1, rotateY: 0 });
     gsap.set([leftSeamRef.current, rightSeamRef.current], { opacity: 1 });
-    gsap.set(landscapeRef.current, { opacity: 0.15 });
-    gsap.set(gridRef.current, { opacity: 0.15 });
-    gsap.set(reflectionsRef.current, { opacity: 0.15 });
+    gsap.set(landscapeRef.current, { opacity: 0.08 });
+    gsap.set(gridRef.current, { opacity: 0.08 });
+    gsap.set(reflectionsRef.current, { opacity: 0.08 });
     gsap.set([topLabelRef.current, topStatusRef.current, hudRef.current], { opacity: 0 });
     gsap.set(headlineRef.current, { opacity: 0, y: 30 });
     gsap.set(subtitleRef.current, { opacity: 0, y: 20 });
@@ -62,45 +62,45 @@ export default function Hero() {
       ease: "power2.out"
     }, 0);
 
-    // 35% -> 100%: Curtains slide apart slowly with compression and 3D sway.
+    // 35% -> 100%: Curtains slide apart slowly to 82% (leaving 18% framing visible)
     tl.to(leftPanelRef.current, {
-      xPercent: -88,
-      scaleX: 0.92,
-      rotateY: -3,
+      xPercent: -82,
+      scaleX: 0.94,
+      rotateY: -4,
       ease: "power3.inOut",
       duration: 65
     }, 35);
     tl.to(rightPanelRef.current, {
-      xPercent: 88,
-      scaleX: 0.92,
-      rotateY: 3,
+      xPercent: 82,
+      scaleX: 0.94,
+      rotateY: 4,
       ease: "power3.inOut",
       duration: 65
     }, 35);
 
-    // Center seam trim fades out as curtains separate
+    // Seam trims blend-out slightly as curtains separate
     tl.to([leftSeamRef.current, rightSeamRef.current], {
-      opacity: 0,
+      opacity: 0.2, // Keep faint glow on separated trims
       ease: "power2.out",
-      duration: 15
+      duration: 25
     }, 35);
 
-    // 40% -> 70%: Background window content, grid, and glass reflections become visible
+    // 35% -> 70%: Background window content, grid, and glass reflections become visible
     tl.to(landscapeRef.current, {
       opacity: 0.7, // Maximum brightness for text legibility
       ease: "sine.out",
-      duration: 30
-    }, 40);
+      duration: 35
+    }, 35);
     tl.to(gridRef.current, {
       opacity: 1,
       ease: "sine.out",
-      duration: 30
-    }, 40);
+      duration: 35
+    }, 35);
     tl.to(reflectionsRef.current, {
       opacity: 1,
       ease: "sine.out",
-      duration: 30
-    }, 40);
+      duration: 35
+    }, 35);
 
     // 50% -> 75%: Bezel markings fade in
     tl.to([topLabelRef.current, topStatusRef.current, hudRef.current], {
@@ -109,7 +109,7 @@ export default function Hero() {
       duration: 25
     }, 50);
 
-    // 70% -> 90%: Headline and details begin appearing
+    // 70% -> 90%: Headline and details begin appearing (curtains are mostly open)
     tl.to(headlineRef.current, {
       opacity: 1,
       y: 0,
@@ -176,7 +176,7 @@ export default function Hero() {
 
         {/* The Panoramic Window */}
         <div 
-          className="relative w-[82vw] h-[78vh] md:w-[80vw] md:h-[75vh] rounded-[2.8rem] overflow-hidden bg-[#030303] flex items-center justify-center shadow-[inset_0_0_80px_rgba(0,0,0,0.95)]"
+          className="relative w-[82vw] h-[78vh] md:w-[80vw] md:h-[75vh] rounded-[2.8rem] overflow-hidden bg-[#030303] flex items-center justify-center shadow-[inset_0_0_120px_rgba(0,0,0,0.98)]"
           style={{ perspective: "1200px", transformStyle: "preserve-3d" }}
         >
           
@@ -259,25 +259,33 @@ export default function Hero() {
             />
           </div>
 
+          {/* Soft Vignette Overlay */}
+          <div 
+            className="absolute inset-0 pointer-events-none z-22 rounded-[inherit] mix-blend-multiply opacity-80"
+            style={{
+              background: "radial-gradient(circle, transparent 50%, rgba(0, 0, 0, 0.85) 100%)"
+            }}
+          />
+
           {/* Glass Reflections & Glare Bezel Layer */}
           <div ref={reflectionsRef} className="absolute inset-0 pointer-events-none" style={{ zIndex: 28 }}>
             {/* Diagonal reflection streaks */}
             <div 
-              className="absolute inset-0 opacity-[0.05]"
+              className="absolute inset-0 opacity-[0.07]"
               style={{
                 background: "linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.4) 40%, rgba(255,255,255,0.4) 43%, transparent 44%, transparent 50%, rgba(255,255,255,0.3) 55%, rgba(255,255,255,0.3) 57%, transparent 58%)",
                 backgroundSize: "200% 200%"
               }}
             />
 
-            {/* Soft glare near top-left */}
+            {/* Subtle blue/white glare */}
             <div 
-              className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-white/10 to-transparent blur-3xl"
+              className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-gradient-to-br from-cyan-500/10 via-white/10 to-transparent blur-3xl"
             />
 
             {/* Faint dust/noise texture */}
             <div 
-              className="absolute inset-0 opacity-[0.02] mix-blend-overlay"
+              className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
               }}
@@ -285,7 +293,7 @@ export default function Hero() {
 
             {/* Inset shadow for glass/bezel depth */}
             <div 
-              className="absolute inset-0 rounded-[inherit] shadow-[inset_0_4px_30px_rgba(255,255,255,0.08),inset_0_-4px_30px_rgba(0,0,0,0.85)] border border-white/10"
+              className="absolute inset-0 rounded-[2.8rem] shadow-[inset_0_4px_30px_rgba(255,255,255,0.08),inset_0_-4px_30px_rgba(0,0,0,0.85)] border border-white/10"
             />
           </div>
 
@@ -354,39 +362,45 @@ export default function Hero() {
             ref={leftPanelRef}
             className="absolute inset-y-0 left-0 w-1/2 z-40 border-r border-white/5 select-none pointer-events-none"
             style={{
-              background: "linear-gradient(90deg, rgba(5,7,14,0.98) 0%, rgba(18,24,42,0.96) 35%, rgba(67,24,36,0.40) 68%, rgba(255,204,38,0.16) 96%, rgba(255,204,38,0.36) 100%)",
+              backgroundImage: `
+                repeating-linear-gradient(
+                  90deg,
+                  rgba(255, 255, 255, 0.10) 0px,
+                  rgba(255, 255, 255, 0.035) 9px,
+                  rgba(0, 0, 0, 0.24) 22px,
+                  rgba(255, 255, 255, 0.04) 38px
+                ),
+                linear-gradient(90deg,
+                  rgba(45, 5, 12, 0.98),
+                  rgba(120, 12, 28, 0.94),
+                  rgba(55, 4, 16, 0.98)
+                )
+              `,
               boxShadow: "inset -15px 0 40px rgba(0,0,0,0.6), 5px 0 25px rgba(0,0,0,0.4)",
               transformOrigin: "left center",
             }}
           >
-            {/* Fabric folds overlay */}
-            <div 
-              className="absolute inset-0 opacity-[0.4] mix-blend-soft-light"
-              style={{
-                backgroundImage: `repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.012) 8px, rgba(0,0,0,0.16) 18px, rgba(255,255,255,0.018) 32px)`,
-              }}
-            />
             {/* Velvet sheen overlay */}
             <div 
-              className="absolute inset-0 opacity-[0.25] mix-blend-overlay"
+              className="absolute inset-0 opacity-[0.22] mix-blend-overlay pointer-events-none"
               style={{
-                backgroundImage: `linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 48%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 52%, transparent 60%)`,
+                backgroundImage: `linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15) 48%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.15) 52%, transparent 60%)`,
               }}
             />
             {/* Soft noise texture overlay */}
             <div 
-              className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
+              className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
               }}
             />
-            {/* Golden center seam (on the right edge of left panel) */}
+            {/* Inner gold piping (on the right edge of left panel) */}
             <div 
               ref={leftSeamRef}
-              className="absolute inset-y-0 right-0 w-[4px]"
+              className="absolute inset-y-0 right-0 w-[2px]"
               style={{
-                background: "rgba(255, 205, 35, 0.85)",
-                boxShadow: "0 0 26px rgba(255, 205, 35, 0.55)",
+                background: "linear-gradient(to bottom, transparent, #ffd23f, transparent)",
+                boxShadow: "0 0 24px rgba(255, 210, 63, 0.55)",
               }}
             />
           </div>
@@ -396,39 +410,45 @@ export default function Hero() {
             ref={rightPanelRef}
             className="absolute inset-y-0 right-0 w-1/2 z-40 border-l border-white/5 select-none pointer-events-none"
             style={{
-              background: "linear-gradient(270deg, rgba(5,7,14,0.98) 0%, rgba(18,24,42,0.96) 35%, rgba(67,24,36,0.40) 68%, rgba(255,204,38,0.16) 96%, rgba(255,204,38,0.36) 100%)",
+              backgroundImage: `
+                repeating-linear-gradient(
+                  270deg,
+                  rgba(255, 255, 255, 0.10) 0px,
+                  rgba(255, 255, 255, 0.035) 9px,
+                  rgba(0, 0, 0, 0.24) 22px,
+                  rgba(255, 255, 255, 0.04) 38px
+                ),
+                linear-gradient(270deg,
+                  rgba(45, 5, 12, 0.98),
+                  rgba(120, 12, 28, 0.94),
+                  rgba(55, 4, 16, 0.98)
+                )
+              `,
               boxShadow: "inset 15px 0 40px rgba(0,0,0,0.6), -5px 0 25px rgba(0,0,0,0.4)",
               transformOrigin: "right center",
             }}
           >
-            {/* Fabric folds overlay */}
-            <div 
-              className="absolute inset-0 opacity-[0.4] mix-blend-soft-light"
-              style={{
-                backgroundImage: `repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.012) 8px, rgba(0,0,0,0.16) 18px, rgba(255,255,255,0.018) 32px)`,
-              }}
-            />
             {/* Velvet sheen overlay */}
             <div 
-              className="absolute inset-0 opacity-[0.25] mix-blend-overlay"
+              className="absolute inset-0 opacity-[0.22] mix-blend-overlay pointer-events-none"
               style={{
-                backgroundImage: `linear-gradient(225deg, transparent 40%, rgba(255,255,255,0.1) 48%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 52%, transparent 60%)`,
+                backgroundImage: `linear-gradient(225deg, transparent 40%, rgba(255,255,255,0.15) 48%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.15) 52%, transparent 60%)`,
               }}
             />
             {/* Soft noise texture overlay */}
             <div 
-              className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
+              className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
               }}
             />
-            {/* Golden center seam (on the left edge of right panel) */}
+            {/* Inner gold piping (on the left edge of right panel) */}
             <div 
               ref={rightSeamRef}
-              className="absolute inset-y-0 left-0 w-[4px]"
+              className="absolute inset-y-0 left-0 w-[2px]"
               style={{
-                background: "rgba(255, 205, 35, 0.85)",
-                boxShadow: "0 0 26px rgba(255, 205, 35, 0.55)",
+                background: "linear-gradient(to bottom, transparent, #ffd23f, transparent)",
+                boxShadow: "0 0 24px rgba(255, 210, 63, 0.55)",
               }}
             />
           </div>
