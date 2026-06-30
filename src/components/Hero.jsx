@@ -13,6 +13,8 @@ export default function Hero() {
   const containerRef = useRef(null);
   const leftPanelRef = useRef(null);
   const rightPanelRef = useRef(null);
+  const leftSeamRef = useRef(null);
+  const rightSeamRef = useRef(null);
   const landscapeRef = useRef(null);
   const gridRef = useRef(null);
   const reflectionsRef = useRef(null);
@@ -28,10 +30,11 @@ export default function Hero() {
 
   useGSAP(() => {
     // Initial states for scroll-driven elements
-    gsap.set([leftPanelRef.current, rightPanelRef.current], { xPercent: 0 });
-    gsap.set(landscapeRef.current, { opacity: 0 });
-    gsap.set(gridRef.current, { opacity: 0 });
-    gsap.set(reflectionsRef.current, { opacity: 0 });
+    gsap.set([leftPanelRef.current, rightPanelRef.current], { xPercent: 0, scaleX: 1, rotateY: 0 });
+    gsap.set([leftSeamRef.current, rightSeamRef.current], { opacity: 1 });
+    gsap.set(landscapeRef.current, { opacity: 0.15 });
+    gsap.set(gridRef.current, { opacity: 0.15 });
+    gsap.set(reflectionsRef.current, { opacity: 0.15 });
     gsap.set([topLabelRef.current, topStatusRef.current, hudRef.current], { opacity: 0 });
     gsap.set(headlineRef.current, { opacity: 0, y: 30 });
     gsap.set(subtitleRef.current, { opacity: 0, y: 20 });
@@ -45,84 +48,97 @@ export default function Hero() {
         trigger: containerRef.current,
         start: "top top",
         end: "+=200%",
-        scrub: 1.2, // Adds a heavy, buttery mechanical lag to the scroll tracking
+        scrub: 1.2, // Heavy mechanical feel
         pin: true,
         anticipatePin: 1,
       }
     });
 
-    // 0 -> 15%: Curtains closed. Scroll indicator fades out.
+    // 0 -> 35%: Curtains remain closed. Scroll indicator fades out.
     tl.to(scrollIndicatorRef.current, {
       opacity: 0,
       y: -15,
-      duration: 15,
+      duration: 35,
       ease: "power2.out"
     }, 0);
 
-    // 15% -> 50%: Curtains slide apart with heavy mechanical non-linear ease.
+    // 35% -> 100%: Curtains slide apart slowly with compression and 3D sway.
     tl.to(leftPanelRef.current, {
-      xPercent: -100,
+      xPercent: -88,
+      scaleX: 0.92,
+      rotateY: -3,
       ease: "power3.inOut",
-      duration: 35
-    }, 15);
+      duration: 65
+    }, 35);
     tl.to(rightPanelRef.current, {
-      xPercent: 100,
+      xPercent: 88,
+      scaleX: 0.92,
+      rotateY: 3,
       ease: "power3.inOut",
-      duration: 35
-    }, 15);
+      duration: 65
+    }, 35);
 
-    // 30% -> 60%: Landscape, grid, and glass reflections fade in.
+    // Center seam trim fades out as curtains separate
+    tl.to([leftSeamRef.current, rightSeamRef.current], {
+      opacity: 0,
+      ease: "power2.out",
+      duration: 15
+    }, 35);
+
+    // 40% -> 70%: Background window content, grid, and glass reflections become visible
     tl.to(landscapeRef.current, {
-      opacity: 0.7,
+      opacity: 0.7, // Maximum brightness for text legibility
       ease: "sine.out",
-      duration: 25
-    }, 30);
+      duration: 30
+    }, 40);
     tl.to(gridRef.current, {
       opacity: 1,
       ease: "sine.out",
-      duration: 25
-    }, 30);
+      duration: 30
+    }, 40);
     tl.to(reflectionsRef.current, {
       opacity: 1,
       ease: "sine.out",
-      duration: 25
-    }, 30);
+      duration: 30
+    }, 40);
 
-    // 40% -> 65%: Bezel UI and Main Text fade in.
+    // 50% -> 75%: Bezel markings fade in
     tl.to([topLabelRef.current, topStatusRef.current, hudRef.current], {
       opacity: 1,
       ease: "sine.out",
-      duration: 20
-    }, 40);
+      duration: 25
+    }, 50);
+
+    // 70% -> 90%: Headline and details begin appearing
     tl.to(headlineRef.current, {
       opacity: 1,
       y: 0,
       ease: "power2.out",
       duration: 20
-    }, 45);
+    }, 70);
     tl.to(subtitleRef.current, {
       opacity: 1,
       y: 0,
       ease: "power2.out",
       duration: 20
-    }, 52);
+    }, 75);
     tl.to(detailsRef.current, {
       opacity: 0.5,
       y: 0,
       ease: "power2.out",
       duration: 20
-    }, 58);
+    }, 80);
 
-    // 65% -> 85%: CTA buttons fade in.
+    // 80% -> 95%: CTA buttons fade in
     tl.to(ctaRef.current, {
       opacity: 1,
       scale: 1,
       ease: "power2.out",
-      duration: 20
-    }, 65);
+      duration: 15
+    }, 80);
 
-    // 85% -> 100%: Pinned hold at fully open state
-    tl.to({}, { duration: 15 }, 85);
+    // 95% -> 100%: Hold at fully open state
+    tl.to({}, { duration: 5 }, 95);
 
   }, { scope: containerRef });
 
@@ -159,7 +175,10 @@ export default function Hero() {
         </div>
 
         {/* The Panoramic Window */}
-        <div className="relative w-[82vw] h-[78vh] md:w-[80vw] md:h-[75vh] rounded-[2.8rem] overflow-hidden bg-[#030303] flex items-center justify-center shadow-[inset_0_0_80px_rgba(0,0,0,0.95)]">
+        <div 
+          className="relative w-[82vw] h-[78vh] md:w-[80vw] md:h-[75vh] rounded-[2.8rem] overflow-hidden bg-[#030303] flex items-center justify-center shadow-[inset_0_0_80px_rgba(0,0,0,0.95)]"
+          style={{ perspective: "1200px", transformStyle: "preserve-3d" }}
+        >
           
           {/* Landscape Layer 1: Far background (slow video horizontal movement) */}
           <motion.div
@@ -333,41 +352,85 @@ export default function Hero() {
           {/* Left Panel */}
           <div
             ref={leftPanelRef}
-            className="absolute inset-y-0 left-0 w-1/2 z-40 border-r border-white/10 flex items-center justify-end select-none pointer-events-none"
+            className="absolute inset-y-0 left-0 w-1/2 z-40 border-r border-white/5 select-none pointer-events-none"
             style={{
-              background: "linear-gradient(to right, #09090b, #18181b, #111115)",
-              boxShadow: "inset -15px 0 40px rgba(0,0,0,0.9), 10px 0 30px rgba(0,0,0,0.5)",
+              background: "linear-gradient(90deg, rgba(5,7,14,0.98) 0%, rgba(18,24,42,0.96) 35%, rgba(67,24,36,0.40) 68%, rgba(255,204,38,0.16) 96%, rgba(255,204,38,0.36) 100%)",
+              boxShadow: "inset -15px 0 40px rgba(0,0,0,0.6), 5px 0 25px rgba(0,0,0,0.4)",
+              transformOrigin: "left center",
             }}
           >
-            {/* Brushed metal fine lines texture */}
+            {/* Fabric folds overlay */}
             <div 
-              className="absolute inset-0 opacity-[0.04] mix-blend-overlay"
+              className="absolute inset-0 opacity-[0.4] mix-blend-soft-light"
               style={{
-                backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 4px)`,
+                backgroundImage: `repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.012) 8px, rgba(0,0,0,0.16) 18px, rgba(255,255,255,0.018) 32px)`,
               }}
             />
-            {/* Edge lighting / amber neon seam */}
-            <div className="h-full w-[2px] bg-gradient-to-b from-transparent via-[#facc15]/40 to-transparent shadow-[0_0_15px_#facc15]" />
+            {/* Velvet sheen overlay */}
+            <div 
+              className="absolute inset-0 opacity-[0.25] mix-blend-overlay"
+              style={{
+                backgroundImage: `linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 48%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 52%, transparent 60%)`,
+              }}
+            />
+            {/* Soft noise texture overlay */}
+            <div 
+              className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
+              }}
+            />
+            {/* Golden center seam (on the right edge of left panel) */}
+            <div 
+              ref={leftSeamRef}
+              className="absolute inset-y-0 right-0 w-[4px]"
+              style={{
+                background: "rgba(255, 205, 35, 0.85)",
+                boxShadow: "0 0 26px rgba(255, 205, 35, 0.55)",
+              }}
+            />
           </div>
 
           {/* Right Panel */}
           <div
             ref={rightPanelRef}
-            className="absolute inset-y-0 right-0 w-1/2 z-40 border-l border-white/10 flex items-center justify-start select-none pointer-events-none"
+            className="absolute inset-y-0 right-0 w-1/2 z-40 border-l border-white/5 select-none pointer-events-none"
             style={{
-              background: "linear-gradient(to left, #09090b, #18181b, #111115)",
-              boxShadow: "inset 15px 0 40px rgba(0,0,0,0.9), -10px 0 30px rgba(0,0,0,0.5)",
+              background: "linear-gradient(270deg, rgba(5,7,14,0.98) 0%, rgba(18,24,42,0.96) 35%, rgba(67,24,36,0.40) 68%, rgba(255,204,38,0.16) 96%, rgba(255,204,38,0.36) 100%)",
+              boxShadow: "inset 15px 0 40px rgba(0,0,0,0.6), -5px 0 25px rgba(0,0,0,0.4)",
+              transformOrigin: "right center",
             }}
           >
-            {/* Brushed metal fine lines texture */}
+            {/* Fabric folds overlay */}
             <div 
-              className="absolute inset-0 opacity-[0.04] mix-blend-overlay"
+              className="absolute inset-0 opacity-[0.4] mix-blend-soft-light"
               style={{
-                backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 4px)`,
+                backgroundImage: `repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.012) 8px, rgba(0,0,0,0.16) 18px, rgba(255,255,255,0.018) 32px)`,
               }}
             />
-            {/* Edge lighting / amber neon seam */}
-            <div className="h-full w-[2px] bg-gradient-to-b from-transparent via-[#facc15]/40 to-transparent shadow-[0_0_15px_#facc15]" />
+            {/* Velvet sheen overlay */}
+            <div 
+              className="absolute inset-0 opacity-[0.25] mix-blend-overlay"
+              style={{
+                backgroundImage: `linear-gradient(225deg, transparent 40%, rgba(255,255,255,0.1) 48%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 52%, transparent 60%)`,
+              }}
+            />
+            {/* Soft noise texture overlay */}
+            <div 
+              className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
+              }}
+            />
+            {/* Golden center seam (on the left edge of right panel) */}
+            <div 
+              ref={rightSeamRef}
+              className="absolute inset-y-0 left-0 w-[4px]"
+              style={{
+                background: "rgba(255, 205, 35, 0.85)",
+                boxShadow: "0 0 26px rgba(255, 205, 35, 0.55)",
+              }}
+            />
           </div>
 
         </div>
