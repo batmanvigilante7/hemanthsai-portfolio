@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import FadeContent from "./FadeContent";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,28 +19,15 @@ export default function Hero() {
   const landscapeRef = useRef(null);
   const gridRef = useRef(null);
   const reflectionsRef = useRef(null);
-  
-  const topLabelRef = useRef(null);
-  const topStatusRef = useRef(null);
-  const hudRef = useRef(null);
-  const headlineRef = useRef(null);
-  const subtitleRef = useRef(null);
-  const detailsRef = useRef(null);
-  const ctaRef = useRef(null);
   const scrollIndicatorRef = useRef(null);
 
   useGSAP(() => {
     // Initial states for scroll-driven elements
     gsap.set([leftPanelRef.current, rightPanelRef.current], { xPercent: 0, scaleX: 1, rotateY: 0 });
     gsap.set([leftSeamRef.current, rightSeamRef.current], { opacity: 1 });
-    gsap.set(landscapeRef.current, { opacity: 0.08 });
-    gsap.set(gridRef.current, { opacity: 0.08 });
-    gsap.set(reflectionsRef.current, { opacity: 0.08 });
-    gsap.set([topLabelRef.current, topStatusRef.current, hudRef.current], { opacity: 0 });
-    gsap.set(headlineRef.current, { opacity: 0, y: 30 });
-    gsap.set(subtitleRef.current, { opacity: 0, y: 20 });
-    gsap.set(detailsRef.current, { opacity: 0, y: 15 });
-    gsap.set(ctaRef.current, { opacity: 0, scale: 0.95 });
+    gsap.set(landscapeRef.current, { opacity: 0 });
+    gsap.set(gridRef.current, { opacity: 0 });
+    gsap.set(reflectionsRef.current, { opacity: 0 });
     gsap.set(scrollIndicatorRef.current, { opacity: 1, y: 0 });
 
     // Scroll-driven timeline
@@ -62,7 +50,7 @@ export default function Hero() {
       ease: "power2.out"
     }, 0);
 
-    // 35% -> 100%: Curtains slide apart slowly to 82% (leaving 18% of their width framing visible)
+    // 35% -> 100%: Curtains slide apart slowly to 82% (leaving 18% framing visible)
     tl.to(leftPanelRef.current, {
       xPercent: -82,
       scaleX: 0.94,
@@ -85,57 +73,22 @@ export default function Hero() {
       duration: 25
     }, 35);
 
-    // 35% -> 70%: Background window content, grid, and glass reflections become visible
+    // 20% -> 60%: Background landscape/grid/reflections fade in from 0 to 1
     tl.to(landscapeRef.current, {
-      opacity: 0.7, // Maximum brightness for text legibility
+      opacity: 1,
       ease: "sine.out",
-      duration: 35
-    }, 35);
+      duration: 40
+    }, 20);
     tl.to(gridRef.current, {
       opacity: 1,
       ease: "sine.out",
-      duration: 35
-    }, 35);
+      duration: 40
+    }, 20);
     tl.to(reflectionsRef.current, {
       opacity: 1,
       ease: "sine.out",
-      duration: 35
-    }, 35);
-
-    // 50% -> 75%: Bezel markings fade in
-    tl.to([topLabelRef.current, topStatusRef.current, hudRef.current], {
-      opacity: 1,
-      ease: "sine.out",
-      duration: 25
-    }, 50);
-
-    // 70% -> 90%: Headline and details begin appearing (curtains are mostly open)
-    tl.to(headlineRef.current, {
-      opacity: 1,
-      y: 0,
-      ease: "power2.out",
-      duration: 20
-    }, 70);
-    tl.to(subtitleRef.current, {
-      opacity: 1,
-      y: 0,
-      ease: "power2.out",
-      duration: 20
-    }, 75);
-    tl.to(detailsRef.current, {
-      opacity: 0.5,
-      y: 0,
-      ease: "power2.out",
-      duration: 20
-    }, 80);
-
-    // 80% -> 95%: CTA buttons fade in
-    tl.to(ctaRef.current, {
-      opacity: 1,
-      scale: 1,
-      ease: "power2.out",
-      duration: 15
-    }, 80);
+      duration: 40
+    }, 20);
 
     // 95% -> 100%: Hold at fully open state
     tl.to({}, { duration: 5 }, 95);
@@ -159,19 +112,21 @@ export default function Hero() {
       <div className="relative p-[6px] rounded-[3.2rem] bg-gradient-to-b from-[#1b1c20] via-[#090a0c] to-[#030304] shadow-[0_30px_100px_rgba(0,0,0,0.85)] border border-white/5 z-10 flex items-center justify-center">
         
         {/* Top Label */}
-        <div
-          ref={topLabelRef}
-          className="absolute -top-[2.2rem] left-[1.5rem] select-none pointer-events-none font-mono text-[9px] tracking-[0.35em] text-white/35 uppercase"
-        >
-          COACH 01 // BUILDER CLASS
+        <div className="absolute -top-[2.2rem] left-[1.5rem] select-none pointer-events-none z-30">
+          <FadeContent blur={false} duration={900} delay={100} initialOpacity={0}>
+            <div className="font-mono text-[9px] tracking-[0.35em] text-white/35 uppercase">
+              COACH 01 // BUILDER CLASS
+            </div>
+          </FadeContent>
         </div>
 
         {/* Top Right HUD Markings */}
-        <div
-          ref={topStatusRef}
-          className="absolute -top-[2.2rem] right-[1.5rem] select-none pointer-events-none font-mono text-[9px] tracking-[0.35em] text-white/35 uppercase flex gap-6"
-        >
-          <span>SYS // ACTIVE</span>
+        <div className="absolute -top-[2.2rem] right-[1.5rem] select-none pointer-events-none z-30">
+          <FadeContent blur={false} duration={900} delay={100} initialOpacity={0}>
+            <div className="font-mono text-[9px] tracking-[0.35em] text-white/35 uppercase flex gap-6">
+              <span>SYS // ACTIVE</span>
+            </div>
+          </FadeContent>
         </div>
 
         {/* The Panoramic Window */}
@@ -299,12 +254,13 @@ export default function Hero() {
           </div>
 
           {/* HUD text details */}
-          <div
-            ref={hudRef}
-            className="absolute bottom-6 right-8 font-mono text-[9px] tracking-[0.25em] text-white/35 uppercase z-30 flex flex-col items-end gap-1 select-none pointer-events-none"
-          >
-            <div>DEPART // POTENTIAL</div>
-            <div>ARRIVE // PROOF</div>
+          <div className="absolute bottom-6 right-8 select-none pointer-events-none z-30">
+            <FadeContent blur={false} duration={1000} delay={500} initialOpacity={0}>
+              <div className="font-mono text-[9px] tracking-[0.25em] text-white/35 uppercase flex flex-col items-end gap-1">
+                <div>DEPART // POTENTIAL</div>
+                <div>ARRIVE // PROOF</div>
+              </div>
+            </FadeContent>
           </div>
 
           {/* Layer 5: Hero Text Content & Readability Gradient Overlay */}
@@ -317,43 +273,42 @@ export default function Hero() {
             />
 
             <div className="relative max-w-md text-left flex flex-col items-start pointer-events-auto">
-              <h1
-                ref={headlineRef}
-                className="font-instrument text-[clamp(2.8rem,5.5vw,5rem)] tracking-[0.08em] text-white font-normal uppercase leading-none mb-6"
-              >
-                Hemanth Sai
-              </h1>
-              <p
-                ref={subtitleRef}
-                className="font-instrument italic text-xl sm:text-2xl md:text-3xl text-stone-300/90 leading-tight mb-8"
-              >
-                Learning by building.
-              </p>
-              <div
-                ref={detailsRef}
-                className="flex flex-col gap-1.5 font-outfit text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-white/50 leading-relaxed mb-8"
-              >
-                <p>CSE Student</p>
-                <p>GITAM University, Visakhapatnam</p>
-              </div>
-              <div
-                ref={ctaRef}
-                className="flex flex-wrap items-center gap-4 mt-2"
-              >
-                {/* Glass buttons with white borders */}
-                <a
-                  href="#projects"
-                  className="font-outfit text-[11px] font-bold uppercase tracking-[0.2em] px-6 py-3 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-full hover:bg-white hover:text-black hover:border-white transition-all duration-300 shadow-[0_4px_20px_rgba(255,255,255,0.05)] hover:shadow-none pointer-events-auto"
-                >
-                  Explore Projects
-                </a>
-                <a
-                  href="#contact"
-                  className="font-outfit text-[11px] font-bold uppercase tracking-[0.2em] px-6 py-3 bg-black/25 backdrop-blur-md border border-white/10 text-white rounded-full hover:bg-white/10 hover:border-white/30 transition-all duration-300 pointer-events-auto"
-                >
-                  Contact Me
-                </a>
-              </div>
+              <FadeContent blur={false} duration={1000} delay={200} initialOpacity={0}>
+                <h1 className="font-instrument text-[clamp(2.8rem,5.5vw,5rem)] tracking-[0.08em] text-white font-normal uppercase leading-none mb-6">
+                  Hemanth Sai
+                </h1>
+              </FadeContent>
+
+              <FadeContent blur={false} duration={1000} delay={350} initialOpacity={0}>
+                <p className="font-instrument italic text-xl sm:text-2xl md:text-3xl text-stone-300/90 leading-tight mb-8">
+                  Learning by building.
+                </p>
+              </FadeContent>
+
+              <FadeContent blur={false} duration={1000} delay={500} initialOpacity={0}>
+                <div className="flex flex-col gap-1.5 font-outfit text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-white/50 leading-relaxed mb-8">
+                  <p>CSE Student</p>
+                  <p>GITAM University, Visakhapatnam</p>
+                </div>
+              </FadeContent>
+
+              <FadeContent blur={false} duration={1100} delay={650} initialOpacity={0}>
+                <div className="flex flex-wrap items-center gap-4 mt-2">
+                  {/* Glass buttons with white borders */}
+                  <a
+                    href="#projects"
+                    className="font-outfit text-[11px] font-bold uppercase tracking-[0.2em] px-6 py-3 bg-white/10 text-white border border-white/20 rounded-full hover:bg-white hover:text-black hover:border-white transition-all duration-300 shadow-[0_4px_20px_rgba(255,255,255,0.05)] hover:shadow-none pointer-events-auto"
+                  >
+                    Explore Projects
+                  </a>
+                  <a
+                    href="#contact"
+                    className="font-outfit text-[11px] font-bold uppercase tracking-[0.2em] px-6 py-3 bg-black/25 border border-white/10 text-white rounded-full hover:bg-white/10 hover:border-white/30 transition-all duration-300 pointer-events-auto"
+                  >
+                    Contact Me
+                  </a>
+                </div>
+              </FadeContent>
             </div>
           </div>
 
